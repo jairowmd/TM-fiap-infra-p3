@@ -48,3 +48,14 @@ resource "aws_subnet" "private" {
     Tier        = "Private"
   }
 }
+
+# Internet Gateway
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-igw"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
