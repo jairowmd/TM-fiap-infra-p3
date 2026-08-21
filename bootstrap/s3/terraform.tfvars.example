@@ -1,3 +1,9 @@
+# criado esse arquivo para nao subir o terraform.tfvars original
+# Região da AWS onde os recursos serão criados
 aws_region   = "us-east-1"
+
+# Nome do projeto, usado para identificar recursos
 project_name = "tm-fiap-p3"
+
+# Ambiente de implantação (ex: dev, staging, prod)
 environment  = "dev"

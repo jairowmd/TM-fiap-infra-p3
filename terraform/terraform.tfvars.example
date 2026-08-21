@@ -1,19 +1,33 @@
+# # Definição de variáveis para configurar a infraestrutura
+
+# Região da AWS onde os recursos serão criados
 aws_region   = "us-east-1"
+
+# Nome do projeto, usado para identificar e organizar recursos
 project_name = "tm-fiap-p3"
+
+# Ambiente de implantação (ex: dev, staging, prod)
 environment  = "dev"
 
+# CIDR principal da VPC (faixa de IPs que a rede vai usar)
 vpc_cidr = "10.0.0.0/16"
 
+# Lista de CIDRs para subnets públicas
+# Essas subnets permitem acesso direto à internet
 public_subnet_cidrs = [
   "10.0.1.0/24",
   "10.0.2.0/24"
 ]
 
+# Lista de CIDRs para subnets privadas
+# Essas subnets não têm acesso direto à internet, usadas para recursos internos
 private_subnet_cidrs = [
   "10.0.11.0/24",
   "10.0.12.0/24"
 ]
 
+# Zonas de disponibilidade da AWS onde os recursos serão distribuídos
+# Isso garante alta disponibilidade e redundância
 availability_zones = [
   "us-east-1a",
   "us-east-1b"
