@@ -1068,3 +1068,4 @@ A base da infraestrutura está preparada para a evolução dos próximos compone
 \n# Trigger CI
 \n# Trigger CI
 \n# Trigger CI after fixing AWS credentials
+\n# Trigger CI after Go upgrade
