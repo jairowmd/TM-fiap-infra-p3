@@ -1,3 +1,3 @@
 module github.com/torresj0/auth-service
 
-go 1.25
+go 1.24

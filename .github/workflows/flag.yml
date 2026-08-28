@@ -9,7 +9,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: togglemaster-flag
-  GO_VERSION: "1.25"
+  GO_VERSION: "1.24"
   GOTOOLCHAIN: local
 
 jobs:
