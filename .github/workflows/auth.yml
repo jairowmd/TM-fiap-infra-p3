@@ -10,7 +10,6 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: togglemaster-auth
   GO_VERSION: "1.24"
-  GOTOOLCHAIN: local
 
 jobs:
   build-test:
