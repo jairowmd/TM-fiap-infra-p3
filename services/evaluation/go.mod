@@ -1,3 +1,3 @@
 module github.com/torresj0/evaluation-service
 
-go 1.22
+go 1.25
