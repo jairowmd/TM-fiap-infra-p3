@@ -1064,3 +1064,4 @@ Infraestrutura Core:
 ```
 
 A base da infraestrutura está preparada para a evolução dos próximos componentes do projeto.\n# Teste CI / DevSecOps
+\n# Trigger CI/CD
