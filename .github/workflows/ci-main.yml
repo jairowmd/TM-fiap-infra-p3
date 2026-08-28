@@ -10,7 +10,7 @@ on:
 # Variáveis de ambiente comuns a todos os jobs
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.25"
 
 jobs:
   # -----------------------------------------------------------------
