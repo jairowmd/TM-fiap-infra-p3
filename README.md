@@ -1063,4 +1063,4 @@ Infraestrutura Core:
 [✓] Terraform plan sem alterações
 ```
 
-A base da infraestrutura está preparada para a evolução dos próximos componentes do projeto.
+A base da infraestrutura está preparada para a evolução dos próximos componentes do projeto.\n# Teste CI / DevSecOps
