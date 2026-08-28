@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: togglemaster-flag
+  ECR_REPOSITORY: flag-service
   GO_VERSION: "1.24"
 
 jobs:
