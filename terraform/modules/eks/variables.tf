@@ -9,7 +9,7 @@ variable "environment" {
   type        = string
 }
 
-# Rede — recebido do módulo vpc (Integrante 1)
+# Rede — recebido do módulo vpc (Jairo)
 
 variable "vpc_id" {
   description = "ID da VPC onde o cluster EKS será criado (output do módulo vpc)."

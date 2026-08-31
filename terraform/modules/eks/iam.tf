@@ -1,8 +1,4 @@
 # EKS Cluster IAM Role
-# Permite que a AWS, em nome do cluster, gerencie recursos
-
-# Trust Policy: define QUEM pode assumir esta role.
-# Aqui, apenas o serviço eks.amazonaws.com
 data "aws_iam_policy_document" "eks_cluster_assume_role" {
   statement {
     effect  = "Allow"

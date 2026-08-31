@@ -1,6 +1,6 @@
 # Módulo EKS (IAM + Amazon EKS)
 
-Este diretório contém a infraestrutura de **IAM e Amazon EKS** do projeto ToggleMaster — responsabilidade do integrante de Cloud/DevOps (IAM + EKS).
+Este diretório contém a infraestrutura de **IAM e Amazon EKS** do projeto ToggleMaster — responsabilidade do GX de Cloud/DevOps (IAM + EKS).
 
 O objetivo é disponibilizar um cluster Kubernetes gerenciado, pronto para receber posteriormente o ArgoCD, os 5 microsserviços (`auth-service`, `flag-service`, `targeting-service`, `evaluation-service`, `analytics-service`) e permissões específicas por Pod via IRSA/EKS Pod Identity.
 
@@ -29,7 +29,7 @@ O objetivo é disponibilizar um cluster Kubernetes gerenciado, pronto para receb
 ```text
 AWS
 │
-└── VPC (módulo vpc, Integrante 1)
+└── VPC (módulo vpc, JAIRO)
     │
     └── Private Subnets
         │
@@ -61,7 +61,7 @@ modules/vpc
         ┌─────────────────┴─────────────────┐
         │                                    │
 modules/security-groups            CI/CD, ArgoCD, kubectl
-(Integrante 2 usa                  (usam cluster_name,
+(JOAO            (usam cluster_name,
  cluster_security_group_id         cluster_endpoint,
  como application_security_group_id) cluster_certificate_authority_data)
 ```
@@ -104,9 +104,6 @@ Fixada como variável (`kubernetes_version`, default `"1.34"`), não hardcoded n
 
 O root já fixa `aws = "~> 5.0"` (`terraform/providers.tf`), resolvido em `5.100.0` no lock file — acima do mínimo (`>= 5.34`) exigido pelo bloco `access_config`/`authentication_mode` usado no cluster. Nenhuma mudança de provider foi necessária.
 
-### Security Groups do EKS
-
-Optei por **não criar** uma Security Group própria no módulo. O `aws_eks_cluster` já cria automaticamente uma SG gerenciada pelo EKS, e o Managed Node Group a herda por padrão (não usamos launch template customizado). Essa SG é exposta como output `cluster_security_group_id` — é ela que o Integrante 2 deve usar como `application_security_group_id` no módulo `security-groups` para liberar Postgres/Redis para o cluster.
 
 ### EKS Access Entries (acesso via kubectl)
 
@@ -148,7 +145,7 @@ Com `access_config { authentication_mode = "API_AND_CONFIG_MAP" }`, a AWS **não
 | `cluster_arn` | auditoria | referência do recurso |
 | `cluster_endpoint` | kubectl, ArgoCD, providers Terraform kubernetes/helm | acesso à API |
 | `cluster_certificate_authority_data` | kubectl, ArgoCD | TLS |
-| `cluster_security_group_id` | **Integrante 2 (RDS/ElastiCache)** | `application_security_group_id` no módulo `security-groups` |
+| `cluster_security_group_id` | `application_security_group_id` no módulo `security-groups` |
 | `cluster_oidc_issuer_url` | futuro (IRSA) | ainda não consumido nesta fase |
 | `node_group_name` | observabilidade | identificação |
 | `node_role_arn` | políticas futuras | anexar permissões adicionais aos nodes |
@@ -235,7 +232,7 @@ Resultado esperado:
 | `kubectl` retorna `Unauthorized`/`forbidden` | `cluster_admin_principal_arns` vazio ou ARN incorreto | confirmar ARN com `aws sts get-caller-identity` e reaplicar |
 | Nodes não entram no cluster | Node Role sem as 3 policies, ou subnets incorretas | conferir `iam.tf` e se `private_subnet_ids` têm rota para NAT Gateway |
 | `ErrImagePull` do ECR | falta `AmazonEC2ContainerRegistryReadOnly`, ou imagem em outra região | conferir policy attachment e região do ECR |
-| Security Groups bloqueando RDS/Redis | Integrante 2 não liberou o SG do cluster | usar `eks_cluster_security_group_id` como `application_security_group_id` |
+| Security Groups bloqueando RDS/Redis | usar `eks_cluster_security_group_id` como `application_security_group_id` |
 | `kubectl` não conecta | endpoint público desabilitado ou IP fora do CIDR liberado | conferir `cluster_endpoint_public_access_cidrs` |
 
 ---
