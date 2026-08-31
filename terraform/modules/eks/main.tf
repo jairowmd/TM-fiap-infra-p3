@@ -9,9 +9,7 @@ locals {
   }
 }
 
-# ============================================================
 # EKS Cluster (control plane)
-# ============================================================
 
 resource "aws_eks_cluster" "this" {
   name     = local.cluster_name
@@ -20,8 +18,7 @@ resource "aws_eks_cluster" "this" {
 
   vpc_config {
     subnet_ids = var.private_subnet_ids
-    # SGs extras opcionais; a SG principal do control plane/nodes é
-    # criada automaticamente pelo próprio EKS (ver output cluster_security_group_id).
+    # SGs extras opcionais; a SG principal do control plane/nodes é criada automaticamente pelo EKS e não é exposta para o Terraform.
     security_group_ids = var.cluster_additional_security_group_ids
 
     endpoint_private_access = true
@@ -29,8 +26,7 @@ resource "aws_eks_cluster" "this" {
     public_access_cidrs     = var.cluster_endpoint_public_access_cidrs
   }
 
-  # Habilita o gerenciamento de acesso via EKS Access Entries (API),
-  # mantendo compatibilidade com o aws-auth ConfigMap legado.
+  # Habilita o gerenciamento de acesso via EKS Access Entries (API)
   access_config {
     authentication_mode = "API_AND_CONFIG_MAP"
   }
@@ -42,9 +38,7 @@ resource "aws_eks_cluster" "this" {
   ]
 }
 
-# Concede acesso administrativo ao cluster (via EKS Access Entries) para
-# os principals informados — ex.: o usuário/role IAM de quem roda o Terraform
-# e vai operar o cluster com kubectl.
+# Concede acesso administrativo ao cluster (via EKS Access Entries) para os principais informados
 resource "aws_eks_access_entry" "admin" {
   for_each = toset(var.cluster_admin_principal_arns)
 
@@ -66,9 +60,7 @@ resource "aws_eks_access_policy_association" "admin" {
   depends_on = [aws_eks_access_entry.admin]
 }
 
-# ============================================================
 # Managed Node Group (worker nodes)
-# ============================================================
 
 resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
@@ -100,15 +92,12 @@ resource "aws_eks_node_group" "this" {
   ]
 
   # Evita que o Terraform reverta ajustes de escala feitos em runtime
-  # (ex.: Cluster Autoscaler ou ajuste manual via console/CLI).
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
   }
 }
 
-# ============================================================
 # Add-ons do EKS
-# ============================================================
 
 # Networking: atribui ENIs/IPs da VPC aos Pods. Obrigatório.
 resource "aws_eks_addon" "vpc_cni" {
@@ -128,8 +117,7 @@ resource "aws_eks_addon" "kube_proxy" {
   tags                        = local.tags
 }
 
-# DNS interno do cluster (service discovery entre os 5 microsserviços). Obrigatório.
-# Depende do Node Group porque os Pods do CoreDNS precisam de um node para rodar.
+# DNS interno do cluster (service discovery entre os 5 microsserviços).
 resource "aws_eks_addon" "coredns" {
   cluster_name                = aws_eks_cluster.this.name
   addon_name                  = "coredns"
@@ -140,7 +128,7 @@ resource "aws_eks_addon" "coredns" {
   depends_on = [aws_eks_node_group.this]
 }
 
-# Métricas de CPU/memória para 'kubectl top' e HPA. Opcional.
+# Métricas de CPU/memória para 'kubectl top' e HPA.
 resource "aws_eks_addon" "metrics_server" {
   count = var.enable_metrics_server ? 1 : 0
 

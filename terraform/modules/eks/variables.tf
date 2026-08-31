@@ -1,7 +1,4 @@
-# ============================================================
 # Identificação / Naming / Tagging
-# ============================================================
-
 variable "project_name" {
   description = "Nome do projeto, usado para compor nomes e tags dos recursos (ex.: tm-fiap-p3)."
   type        = string
@@ -12,9 +9,7 @@ variable "environment" {
   type        = string
 }
 
-# ============================================================
 # Rede — recebido do módulo vpc (Integrante 1)
-# ============================================================
 
 variable "vpc_id" {
   description = "ID da VPC onde o cluster EKS será criado (output do módulo vpc)."
@@ -37,9 +32,7 @@ variable "cluster_additional_security_group_ids" {
   default     = []
 }
 
-# ============================================================
 # Cluster
-# ============================================================
 
 variable "kubernetes_version" {
   description = "Versão do Kubernetes do control plane EKS. Deve ser uma versão em standard support — conferir antes de alterar em https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions-standard.html"
@@ -65,10 +58,7 @@ variable "cluster_admin_principal_arns" {
   default     = []
 }
 
-# ============================================================
 # Managed Node Group
-# ============================================================
-
 variable "node_group_config" {
   description = "Configuração do Managed Node Group: tipos de instância, capacidade e escala."
   type = object({
@@ -90,10 +80,7 @@ variable "node_group_config" {
   }
 }
 
-# ============================================================
 # Add-ons
-# ============================================================
-
 variable "enable_metrics_server" {
   description = "Se true, instala o add-on metrics-server, necessário para 'kubectl top' e para HPA (Horizontal Pod Autoscaler) baseado em CPU/memória."
   type        = bool
