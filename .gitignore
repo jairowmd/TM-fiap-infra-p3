@@ -44,4 +44,5 @@ terraform.rc
 # planout
 
 # Terraform plan files
-*.tfplan
+*.tfplanservices/*/coverage.out
+services/*/coverage.out
