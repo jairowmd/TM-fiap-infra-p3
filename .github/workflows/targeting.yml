@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: targeting-service
   GO_VERSION: "1.24"
 
@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: fs
           scan-ref: services/targeting
@@ -104,6 +104,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -117,7 +118,7 @@ jobs:
         run: docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
 
       - name: Run Trivy image scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           severity: CRITICAL

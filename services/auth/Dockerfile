@@ -5,7 +5,7 @@ COPY . .
 RUN go build -o auth
 
 # ---------- runtime ----------
-FROM alpine:latest
+FROM alpine:3.21
 WORKDIR /app
 COPY --from=builder /app/auth .
 CMD ["./auth"]
