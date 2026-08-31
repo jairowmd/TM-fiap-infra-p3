@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_REGION: us-east-1
   ECR_REPOSITORY: targeting-service
   GO_VERSION: "1.24"
 
