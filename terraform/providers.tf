@@ -8,7 +8,7 @@ terraform {
     # Configuração do provedor AWS
     aws = {
       # Fonte oficial do provedor AWS mantido pela HashiCorp
-      source  = "hashicorp/aws"
+      source = "hashicorp/aws"
       # Versão do provedor: qualquer versão 5.x (compatível com atualizações menores)
       version = "~> 5.0"
     }
