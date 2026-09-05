@@ -19,7 +19,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = var.availability_zones[count.index]
-  map_public_ip_on_launch = true  # Instâncias recebem IP público automaticamente
+  map_public_ip_on_launch = true 
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
@@ -122,7 +122,7 @@ resource "aws_eip" "nat" {
 # # NAT Gateway (permite que subnets privadas acessem a internet)
 resource "aws_nat_gateway" "this" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public[0].id  # NAT precisa estar em uma subnet pública
+  subnet_id     = aws_subnet.public[0].id # NAT precisa estar em uma subnet pública
 
   # Garante que o Internet Gateway seja criado antes
   depends_on = [aws_internet_gateway.this]

@@ -5,7 +5,7 @@ variable "aws_region" {
   # Descrição da variável, útil para documentação
   description = "AWS region where resources will be created"
   # Tipo da variável: string (texto)
-  type        = string
+  type = string
 }
 
 # Variável que define o nome do projeto
@@ -45,4 +45,28 @@ variable "private_subnet_cidrs" {
 variable "availability_zones" {
   description = "Availability Zones used by the subnets"
   type        = list(string)
+}
+
+variable "application_security_group_id" {
+  description = "Security Group used by EKS/application workloads; when set, it receives access to PostgreSQL and Redis"
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "db_username" {
+  description = "Master username shared by the study PostgreSQL instances"
+  type        = string
+  default     = "dbadmin"
+}
+
+variable "db_password" {
+  description = "Master password for the study PostgreSQL instances; set with TF_VAR_db_password"
+  type        = string
+  sensitive   = true
+
+  validation {
+    condition     = length(var.db_password) >= 12
+    error_message = "db_password must contain at least 12 characters."
+  }
 }

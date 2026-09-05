@@ -32,3 +32,11 @@ availability_zones = [
   "us-east-1a",
   "us-east-1b"
 ]
+
+# Defina a senha fora do arquivo, antes de executar plan/apply:
+# $env:TF_VAR_db_password = "uma-senha-forte-com-12-ou-mais-caracteres"
+
+# Quando o EKS estiver integrado, informe o Security Group dos nodes/pods para
+# liberar as portas 5432 (PostgreSQL) e 6379 (Redis). Enquanto for null, os
+# recursos de dados são criados sem regras de entrada.
+# application_security_group_id = "sg-0123456789abcdef0"
