@@ -43,3 +43,11 @@ module "eks" {
   # Sem isto, ninguém consegue autenticar no cluster via kubectl após o apply.
   cluster_admin_principal_arns = var.eks_cluster_admin_principal_arns
 }
+
+module "argocd" {
+  source = "./modules/argocd"
+
+  depends_on = [
+    module.eks
+  ]
+}

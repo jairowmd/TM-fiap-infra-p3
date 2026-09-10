@@ -12,6 +12,12 @@ terraform {
       # Versão do provedor: qualquer versão 5.x (compatível com atualizações menores)
       version = "~> 5.0"
     }
+
+    # Provedor do Helm, utilizado na instalaçao do ArgoCD
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 3.2"
+    }
   }
 }
 
@@ -20,4 +26,30 @@ provider "aws" {
   # Região da AWS onde os recursos serão criados
   # O valor é obtido da variável 'aws_region' definida em variables.tf ou terraform.tfvars
   region = var.aws_region
+}
+
+
+# # Configuração do provedor Helm
+provider "helm" {
+  kubernetes = {
+    host = module.eks.cluster_endpoint
+
+    cluster_ca_certificate = base64decode(
+      module.eks.cluster_certificate_authority_data
+    )
+
+    exec = {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+
+      args = [
+        "eks",
+        "get-token",
+        "--cluster-name",
+        module.eks.cluster_name,
+        "--region",
+        var.aws_region
+      ]
+    }
+  }
 }
