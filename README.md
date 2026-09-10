@@ -56,13 +56,20 @@ AWS
     │   ├── Public Route Table
     │   └── Private Route Table
     │
-    └── Security Groups
+    ├── Security Groups
+    │   │
+    │   ├── Database Security Group
+    │   │   └── Regras para banco de dados
+    │   │
+    │   └── Redis Security Group
+    │       └── Regras para Redis
+    │
+    └── Amazon EKS
         │
-        ├── Database Security Group
-        │   └── Regras para banco de dados
-        │
-        └── Redis Security Group
-            └── Regras para Redis
+        ├── IAM (Cluster Role, Node Role)
+        ├── EKS Cluster (control plane)
+        ├── Managed Node Group (worker nodes em Private Subnets)
+        └── Add-ons (vpc-cni, kube-proxy, coredns, metrics-server)
 ```
 
 A infraestrutura foi organizada em módulos Terraform.
@@ -85,6 +92,13 @@ Terraform
 │   ├── Regras de acesso ao Database
 │   ├── Redis Security Group
 │   └── Regras de acesso ao Redis
+│
+├── EKS Module (IAM + Amazon EKS)
+│   ├── IAM: EKS Cluster Role e EKS Node Role
+│   ├── EKS Cluster (control plane)
+│   ├── EKS Access Entries (acesso via kubectl)
+│   ├── Managed Node Group
+│   └── Add-ons: vpc-cni, kube-proxy, coredns, metrics-server
 │
 └── Terraform Backend
     └── S3 Bucket para armazenamento do Terraform State
@@ -111,6 +125,14 @@ Atualmente, a infraestrutura possui os seguintes componentes.
 | Regras Database | ✅ | Regras de comunicação definidas no módulo |
 | Regras Redis | ✅ | Regras de comunicação definidas no módulo |
 | S3 Terraform Backend | ✅ | Armazenamento remoto do Terraform State |
+| IAM EKS Cluster Role | ✅ | Role assumida pelo control plane do EKS |
+| IAM EKS Node Role | ✅ | Role assumida pelos worker nodes (EC2) |
+| Amazon EKS Cluster | ✅ | Control plane Kubernetes gerenciado |
+| EKS Access Entries | ✅ | Acesso administrativo ao cluster via kubectl |
+| EKS Managed Node Group | ✅ | Worker nodes em Private Subnets |
+| EKS Add-ons | ✅ | vpc-cni, kube-proxy, coredns, metrics-server |
+
+> Detalhamento completo do módulo EKS (decisões de design, variáveis, outputs, troubleshooting) em [`terraform/modules/eks/README.md`](terraform/modules/eks/README.md).
 
 ---
 
@@ -144,10 +166,17 @@ TM-fiap-infra-p3/
         │   ├── variables.tf
         │   └── outputs.tf
         │
-        └── security-groups/
+        ├── security-groups/
+        │   ├── main.tf
+        │   ├── variables.tf
+        │   └── outputs.tf
+        │
+        └── eks/
+            ├── iam.tf
             ├── main.tf
             ├── variables.tf
-            └── outputs.tf
+            ├── outputs.tf
+            └── README.md
 ```
 
 A estrutura foi dividida para separar as responsabilidades da infraestrutura.
@@ -932,34 +961,42 @@ Possíveis próximos módulos:
 ```text
 terraform/modules/
 │
-├── vpc/
-├── security-groups/
+├── vpc/              ✅ implementado
+├── security-groups/  ✅ implementado
+├── eks/               ✅ implementado (IAM + EKS)
 │
 ├── rds/
 ├── elasticache/
+├── dynamodb/
+├── sqs/
+├── secrets-manager/
 ├── ecr/
-├── eks/
 └── monitoring/
 ```
 
 A sequência definitiva deve ser alinhada com a arquitetura e a divisão de responsabilidades do grupo.
 
-Possíveis dependências:
+Dependências:
 
 ```text
 VPC
  │
  ├── Security Groups
  │
- ├── RDS
- │
- ├── ElastiCache
+ ├── RDS / ElastiCache / DynamoDB / SQS / Secrets Manager
  │
  └── EKS
         │
+        ├── Add-ons (vpc-cni, coredns, kube-proxy, metrics-server)
+        │
         ▼
-   Aplicações
+   ArgoCD (GitOps)
+        │
+        ▼
+   Aplicações (5 microsserviços do ToggleMaster)
 ```
+
+Próximos passos naturais para o módulo EKS: OIDC Provider/IRSA, permissões por microsserviço (EKS Pod Identity), e preparação de namespace/RBAC para o ArgoCD.
 
 ---
 
@@ -1062,6 +1099,25 @@ Infraestrutura Core:
 [✓] Teste de recriação da infraestrutura
 [✓] Terraform plan sem alterações
 ```
+
+Módulo EKS (IAM + Amazon EKS):
+
+```text
+[✓] IAM EKS Cluster Role
+[✓] IAM EKS Node Role
+[✓] Amazon EKS Cluster (control plane)
+[✓] EKS Access Entries (acesso via kubectl)
+[✓] EKS Managed Node Group
+[✓] Add-ons: vpc-cni, kube-proxy, coredns, metrics-server
+[✓] Outputs de integração (cluster_security_group_id, node_role_arn, etc.)
+[✓] Integração em terraform/main.tf, variables.tf, outputs.tf
+[✓] terraform apply real (30 to add, 0 to change, 0 to destroy)
+[✓] kubectl get nodes — 2 nodes Ready
+[✓] kubectl get pods -A — aws-node, kube-proxy, coredns, metrics-server Running
+[ ] OIDC Provider / IRSA (pendente — próximo passo natural)
+```
+
+Detalhes completos em [`terraform/modules/eks/README.md`](terraform/modules/eks/README.md).
 
 A base da infraestrutura está preparada para a evolução dos próximos componentes do projeto.\n# Teste CI / DevSecOps
 \n# Trigger CI/CD

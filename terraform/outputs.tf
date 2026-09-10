@@ -24,6 +24,28 @@ output "redis_security_group_id" {
   value = module.security_groups.redis_security_group_id
 }
 
+
+# # Outputs do módulo EKS
+
+output "eks_cluster_name" {
+  description = "Name of the EKS cluster (used by 'aws eks update-kubeconfig')"
+  value       = module.eks.cluster_name
+}
+
+output "eks_cluster_endpoint" {
+  description = "Kubernetes API endpoint of the EKS cluster"
+  value       = module.eks.cluster_endpoint
+}
+
+output "eks_cluster_security_group_id" {
+  description = "Security Group ID managed by EKS (control plane + worker nodes). Pass this as application_security_group_id in the security-groups module to allow the cluster to reach RDS/Redis."
+  value       = module.eks.cluster_security_group_id
+}
+
+output "eks_node_role_arn" {
+  description = "IAM Role ARN used by the EKS worker nodes"
+  value       = module.eks.node_role_arn
+=======
 output "public_subnet_ids" {
   description = "Public subnet IDs created by the VPC module"
   value       = module.vpc.public_subnet_ids
@@ -62,4 +84,5 @@ output "sqs_queue_arn" {
 output "data_services_secret_arn" {
   description = "Secrets Manager ARN containing data-service connection values"
   value       = module.secrets.secret_arn
+
 }

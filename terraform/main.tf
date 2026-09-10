@@ -9,17 +9,33 @@ module "vpc" {
   availability_zones   = var.availability_zones
 }
 
+# Cluster Kubernetes da aplicação.
+module "eks" {
+  source = "./modules/eks"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+
+  kubernetes_version           = var.eks_kubernetes_version
+  cluster_admin_principal_arns = var.eks_cluster_admin_principal_arns
+}
+
+# Security Groups dos bancos.
+# O Security Group do EKS recebe acesso ao PostgreSQL e ao Redis.
 module "security_groups" {
   source = "./modules/security-groups"
 
   project                       = var.project_name
   environment                   = var.environment
   vpc_id                        = module.vpc.vpc_id
-  application_security_group_id = var.application_security_group_id
+  application_security_group_id = module.eks.cluster_security_group_id
 }
 
-# The data layer consumes networking outputs directly. No subnet or Security
-# Group ID needs to be copied into terraform.tfvars.
+# Três bancos PostgreSQL:
+# auth-service, flag-service e targeting-service.
 module "rds" {
   source = "./modules/rds"
 
@@ -31,6 +47,7 @@ module "rds" {
   db_password                = var.db_password
 }
 
+# Redis usado pelo evaluation-service.
 module "elasticache" {
   source = "./modules/elasticache"
 
@@ -40,6 +57,7 @@ module "elasticache" {
   redis_security_group_id = module.security_groups.redis_security_group_id
 }
 
+# DynamoDB usado pelo analytics-service.
 module "dynamodb" {
   source = "./modules/dynamodb"
 
@@ -47,6 +65,7 @@ module "dynamodb" {
   environment  = var.environment
 }
 
+# Fila usada pelo evaluation-service e pelo analytics-service.
 module "sqs" {
   source = "./modules/sqs"
 
@@ -54,11 +73,13 @@ module "sqs" {
   environment  = var.environment
 }
 
+# Credenciais e endereços utilizados pelos microsserviços.
 module "secrets" {
   source = "./modules/secrets"
 
   project_name = var.project_name
   environment  = var.environment
+
   secret_values = {
     DB_USERNAME = var.db_username
     DB_PASSWORD = var.db_password
@@ -70,6 +91,7 @@ module "secrets" {
       module.rds.endpoints.auth,
       module.rds.database_names.auth
     )
+
     FLAG_DATABASE_URL = format(
       "postgres://%s:%s@%s/%s",
       urlencode(var.db_username),
@@ -77,6 +99,7 @@ module "secrets" {
       module.rds.endpoints.flag,
       module.rds.database_names.flag
     )
+
     TARGETING_DATABASE_URL = format(
       "postgres://%s:%s@%s/%s",
       urlencode(var.db_username),
@@ -85,7 +108,12 @@ module "secrets" {
       module.rds.database_names.targeting
     )
 
-    REDIS_URL          = format("redis://%s:%s", module.elasticache.endpoint, module.elasticache.port)
+    REDIS_URL = format(
+      "redis://%s:%s",
+      module.elasticache.endpoint,
+      module.elasticache.port
+    )
+
     AWS_SQS_URL        = module.sqs.queue_url
     AWS_DYNAMODB_TABLE = module.dynamodb.table_name
     AWS_REGION         = var.aws_region
