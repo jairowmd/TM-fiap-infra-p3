@@ -1,45 +1,49 @@
-# # Definição de variáveis para configurar a infraestrutura
-
 # Região da AWS onde os recursos serão criados
-aws_region   = "us-east-1"
+aws_region = "us-east-1"
 
-# Nome do projeto, usado para identificar e organizar recursos
+# Nome do projeto
 project_name = "tm-fiap-p3"
 
-# Ambiente de implantação (ex: dev, staging, prod)
-environment  = "dev"
+# Ambiente
+environment = "dev"
 
-# CIDR principal da VPC (faixa de IPs que a rede vai usar)
+# CIDR principal da VPC
 vpc_cidr = "10.0.0.0/16"
 
-# Lista de CIDRs para subnets públicas
-# Essas subnets permitem acesso direto à internet
+# Subnets públicas
 public_subnet_cidrs = [
   "10.0.1.0/24",
   "10.0.2.0/24"
 ]
 
-# Lista de CIDRs para subnets privadas
-# Essas subnets não têm acesso direto à internet, usadas para recursos internos
+# Subnets privadas
 private_subnet_cidrs = [
   "10.0.11.0/24",
   "10.0.12.0/24"
 ]
 
-# Zonas de disponibilidade da AWS onde os recursos serão distribuídos
-# Isso garante alta disponibilidade e redundância
+# Zonas de disponibilidade
 availability_zones = [
   "us-east-1a",
   "us-east-1b"
 ]
 
-# Versão do Kubernetes do cluster EKS (verificar standard support antes de mudar:
-# https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions-standard.html)
+# Versão do Kubernetes utilizada pelo EKS
 eks_kubernetes_version = "1.34"
 
-# ARNs de quem terá acesso administrativo ao cluster via kubectl.
-# Descubra o seu com: aws sts get-caller-identity
-# Substitua pelo(s) ARN(s) reais antes de aplicar.
+# Usuários ou roles que terão acesso administrativo ao EKS.
+# Descubra o ARN executando:
+# aws sts get-caller-identity --query Arn --output text
+#
+# Não coloque o ARN real neste arquivo de exemplo.
 eks_cluster_admin_principal_arns = [
   "arn:aws:iam::<ACCOUNT_ID>:user/<SEU_USUARIO>"
 ]
+
+# O usuário padrão dos bancos já é "dbadmin".
+# Descomente somente se quiser utilizar outro nome.
+# db_username = "dbadmin"
+
+# A senha não deve ser gravada neste arquivo.
+# Defina no PowerShell antes do terraform plan/apply:
+# $env:TF_VAR_db_password = "uma-senha-forte-com-12-ou-mais-caracteres"
