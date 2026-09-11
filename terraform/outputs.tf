@@ -45,7 +45,8 @@ output "eks_cluster_security_group_id" {
 output "eks_node_role_arn" {
   description = "IAM Role ARN used by the EKS worker nodes"
   value       = module.eks.node_role_arn
-=======
+}
+
 output "public_subnet_ids" {
   description = "Public subnet IDs created by the VPC module"
   value       = module.vpc.public_subnet_ids
