@@ -35,16 +35,9 @@ spec:
                 configMapKeyRef:
                   name: togglemaster-config
                   key: AUTH_PORT
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: togglemaster-secrets
-                  key: AUTH_DB_URL
-            - name: MASTER_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: togglemaster-secrets
-                  key: MASTER_KEY
+          envFrom:
+            - secretRef:
+                name: auth-secret
           readinessProbe:
             httpGet:
               path: /health

@@ -82,7 +82,19 @@ module "argocd" {
 }
 
 module "external_secrets" {
-  source = "./modules/external_secrets"
+  source = "./modules/external-secrets"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  chart_version = var.external_secrets_chart_version
+
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_issuer_url   = module.eks.cluster_oidc_issuer_url
+
+  secret_arns = [
+    module.secrets.secret_arn
+  ]
 
   depends_on = [
     module.eks

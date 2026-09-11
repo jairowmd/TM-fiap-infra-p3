@@ -35,16 +35,14 @@ spec:
                 configMapKeyRef:
                   name: togglemaster-config
                   key: FLAG_PORT
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: togglemaster-secrets
-                  key: FLAG_DB_URL
             - name: AUTH_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
                   name: togglemaster-config
                   key: AUTH_SERVICE_URL
+          envFrom:
+            - secretRef:
+                name: flag-secret
           readinessProbe:
             httpGet:
               path: /health

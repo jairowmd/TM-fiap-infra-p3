@@ -28,16 +28,14 @@ spec:
                 configMapKeyRef:
                   name: togglemaster-config
                   key: TARGETING_PORT
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: togglemaster-secrets
-                  key: TARGETING_DB_URL
             - name: AUTH_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
                   name: togglemaster-config
                   key: AUTH_SERVICE_URL
+          envFrom:
+            - secretRef:
+                name: targeting-secret
           readinessProbe:
             httpGet:
               path: /health

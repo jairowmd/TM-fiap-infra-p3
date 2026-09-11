@@ -71,3 +71,8 @@ variable "db_password" {
     error_message = "db_password must contain at least 12 characters."
   }
 }
+
+variable "external_secrets_chart_version" {
+  description = "External Secrets Helm chart version"
+  type        = string
+}

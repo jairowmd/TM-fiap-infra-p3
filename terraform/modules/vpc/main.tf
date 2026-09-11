@@ -9,6 +9,9 @@ resource "aws_vpc" "this" {
     Project     = var.project_name
     Environment = var.environment
   }
+
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 }
 
 # # Subnets Públicas
