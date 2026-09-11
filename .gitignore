@@ -46,3 +46,7 @@ terraform.rc
 # Terraform plan files
 *.tfplanservices/*/coverage.out
 services/*/coverage.out
+
+
+secrets.yaml
+configmap.yaml
