@@ -1,11 +1,12 @@
-# ---------- build ----------
-FROM golang:1.24-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go build -o analytics
+FROM python:3.9-slim
 
-# ---------- runtime ----------
-FROM alpine:3.21
 WORKDIR /app
-COPY --from=builder /app/analytics .
-CMD ["./analytics"]
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8005
+
+CMD ["python", "app.py"]

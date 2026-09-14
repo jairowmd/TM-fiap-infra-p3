@@ -1,3 +1,14 @@
+locals {
+  services = toset([
+    "auth",
+    "flag",
+    "targeting",
+    "evaluation",
+    "analytics"
+  ])
+}
+
+
 module "vpc" {
   source = "./modules/vpc"
 
@@ -31,6 +42,7 @@ module "security_groups" {
   project                       = var.project_name
   environment                   = var.environment
   vpc_id                        = module.vpc.vpc_id
+  enable_application_ingress    = true
   application_security_group_id = module.eks.cluster_security_group_id
 }
 
@@ -77,12 +89,24 @@ module "argocd" {
   source = "./modules/argocd"
 
   depends_on = [
-    module.eks
+    module.external_secrets
   ]
 }
 
 module "external_secrets" {
-  source = "./modules/external_secrets"
+  source = "./modules/external-secrets"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  chart_version = var.external_secrets_chart_version
+
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_issuer_url   = module.eks.cluster_oidc_issuer_url
+
+  secret_arns = [
+    module.secrets.secret_arn
+  ]
 
   depends_on = [
     module.eks
@@ -133,5 +157,22 @@ module "secrets" {
     AWS_SQS_URL        = module.sqs.queue_url
     AWS_DYNAMODB_TABLE = module.dynamodb.table_name
     AWS_REGION         = var.aws_region
+  }
+}
+
+module "ecr" {
+  for_each = local.services
+
+  source  = "terraform-aws-modules/ecr/aws"
+  version = "2.0.0"
+
+  repository_name = "${var.project_name}-${var.environment}-${each.key}"
+  create_lifecycle_policy = false
+  repository_image_tag_mutability = "IMMUTABLE"
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Service     = each.key
   }
 }

@@ -87,3 +87,14 @@ output "data_services_secret_arn" {
   value       = module.secrets.secret_arn
 
 }
+
+output "ecr_repository_urls" {
+  value = {
+    for service, repo in module.ecr :
+    service => repo.repository_url
+  }
+}
+
+output "github_actions_role_arn" {
+  value = aws_iam_role.github_actions.arn
+}

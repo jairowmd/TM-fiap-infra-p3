@@ -97,6 +97,14 @@ resource "aws_eks_node_group" "this" {
   }
 }
 
+resource "aws_iam_openid_connect_provider" "this" {
+  url = aws_eks_cluster.this.identity[0].oidc[0].issuer
+
+  client_id_list = ["sts.amazonaws.com"]
+
+  tags = local.tags
+}
+
 # Add-ons do EKS
 
 # Networking: atribui ENIs/IPs da VPC aos Pods. Obrigatório.
@@ -139,4 +147,13 @@ resource "aws_eks_addon" "metrics_server" {
   tags                        = local.tags
 
   depends_on = [aws_eks_node_group.this]
+}
+# Agente de identidade de pod (IAM Roles for Service Accounts - IRSA) para o External Secrets Operator.
+resource "aws_eks_addon" "pod_identity_agent" {
+  cluster_name = aws_eks_cluster.this.name
+  addon_name   = "eks-pod-identity-agent"
+
+  depends_on = [
+    aws_eks_node_group.this
+  ]
 }

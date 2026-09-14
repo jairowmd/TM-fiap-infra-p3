@@ -1,11 +1,12 @@
-# ---------- build ----------
-FROM golang:1.24-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go build -o targeting
+FROM python:3.9-slim
 
-# ---------- runtime ----------
-FROM alpine:3.21
 WORKDIR /app
-COPY --from=builder /app/targeting .
-CMD ["./targeting"]
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8003
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8003", "app:app"]

@@ -15,3 +15,8 @@ variable "chart_version" {
   type        = string
   default     = "10.8.4"
 }
+variable "gitops_repository_url" {
+  description = "Git repository containing the Argo CD Applications and Kubernetes manifests"
+  type        = string
+  default     = "https://github.com/jairowmd/TM-fiap-infra-p3.git"
+}

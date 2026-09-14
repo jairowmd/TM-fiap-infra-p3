@@ -53,3 +53,8 @@ output "cluster_role_arn" {
   description = "ARN da IAM Role usada pelo control plane do EKS"
   value       = aws_iam_role.eks_cluster.arn
 }
+
+output "oidc_provider_arn" {
+  description = "IAM OIDC provider ARN for the EKS cluster"
+  value       = aws_iam_openid_connect_provider.this.arn
+}

@@ -12,9 +12,9 @@ resource "aws_security_group" "database" {
   }
 }
 
-# Permite PostgreSQL apenas quando um SG da aplicação for informado
+# Allow PostgreSQL when application ingress is enabled.
 resource "aws_vpc_security_group_ingress_rule" "database_postgres" {
-  count = var.application_security_group_id != null ? 1 : 0
+  count = var.enable_application_ingress ? 1 : 0
 
   security_group_id            = aws_security_group.database.id
   referenced_security_group_id = var.application_security_group_id
@@ -41,9 +41,9 @@ resource "aws_security_group" "redis" {
   }
 }
 
-# Permite Redis apenas quando um SG da aplicação for informado
+# Allow Redis when application ingress is enabled.
 resource "aws_vpc_security_group_ingress_rule" "redis" {
-  count = var.application_security_group_id != null ? 1 : 0
+  count = var.enable_application_ingress ? 1 : 0
 
   security_group_id            = aws_security_group.redis.id
   referenced_security_group_id = var.application_security_group_id

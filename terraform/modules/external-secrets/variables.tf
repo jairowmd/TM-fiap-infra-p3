@@ -31,11 +31,6 @@ variable "oidc_issuer_url" {
   type        = string
 }
 
-variable "namespace" {
-  type    = string
-  default = "external-secrets"
-}
-
 variable "service_account_name" {
   type    = string
   default = "external-secrets"
