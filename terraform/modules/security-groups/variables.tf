@@ -21,6 +21,12 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "enable_application_ingress" {
+  description = "Create PostgreSQL and Redis ingress rules using a plan-time flag"
+  type        = bool
+  default     = false
+}
+
 variable "application_security_group_id" {
   description = "Security Group ID allowed to access database and Redis"
   type        = string
