@@ -89,7 +89,7 @@ module "argocd" {
   source = "./modules/argocd"
 
   depends_on = [
-    module.eks
+    module.external_secrets
   ]
 }
 
@@ -167,7 +167,7 @@ module "ecr" {
   version = "2.0.0"
 
   repository_name = "${var.project_name}-${var.environment}-${each.key}"
-
+  create_lifecycle_policy = false
   repository_image_tag_mutability = "IMMUTABLE"
 
   tags = {
