@@ -122,6 +122,8 @@ module "secrets" {
   environment  = var.environment
 
   secret_values = {
+    MASTER_KEY = random_password.auth_master_key.result
+
     DB_USERNAME = var.db_username
     DB_PASSWORD = var.db_password
 
@@ -190,4 +192,10 @@ module "aws_load_balancer_controller" {
   chart_version     = var.aws_load_balancer_controller_chart_version
 
   depends_on = [module.eks, module.vpc]
+}
+
+# Generated once and retained in Terraform state; consumed only by auth.
+resource "random_password" "auth_master_key" {
+  length  = 48
+  special = false
 }
