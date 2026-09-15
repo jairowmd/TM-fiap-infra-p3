@@ -31,11 +31,8 @@ if not all([AWS_REGION, SQS_QUEUE_URL, DYNAMODB_TABLE_NAME]):
 try:
     session = boto3.Session(region_name=AWS_REGION)
     endpoint_url = os.getenv('AWS_ENDPOINT_URL')
-    skip_ssl_verify = os.getenv("AWS_SKIP_SSL_VERIFY", "true").lower() in ("1", "true", "yes")
     if endpoint_url:
         client_kwargs = {"endpoint_url": endpoint_url}
-        if endpoint_url.startswith("https://") and skip_ssl_verify:
-            client_kwargs["verify"] = False
         sqs_client = session.client("sqs", **client_kwargs)
         dynamodb_client = session.client("dynamodb", **client_kwargs)
     else:
@@ -145,4 +142,4 @@ start_worker()
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 8005))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='127.0.0.1', port=port, debug=False)
