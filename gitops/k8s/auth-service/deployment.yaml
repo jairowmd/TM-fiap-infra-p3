@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: 546238497113.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-auth
+          image: 546238497113.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-auth:bfa204f13d6079a33e360ed14e5455d50d412ed5
           ports:
             - containerPort: 8001
           resources:
