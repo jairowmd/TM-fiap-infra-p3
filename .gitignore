@@ -51,3 +51,6 @@ services/*/coverage.out
 
 secrets.yaml
 configmap.yaml
+
+# Shared non-secret configuration deployed by Argo CD
+!/gitops/k8s/shared/configmap.yaml
