@@ -89,7 +89,8 @@ module "argocd" {
   source = "./modules/argocd"
 
   depends_on = [
-    module.external_secrets
+    module.external_secrets,
+    module.aws_load_balancer_controller
   ]
 }
 
@@ -166,7 +167,7 @@ module "ecr" {
   source  = "terraform-aws-modules/ecr/aws"
   version = "2.0.0"
 
-  repository_name = "${var.project_name}-${var.environment}-${each.key}"
+  repository_name         = "${var.project_name}-${var.environment}-${each.key}"
   create_lifecycle_policy = false
   repository_force_delete = true
 
@@ -175,4 +176,18 @@ module "ecr" {
     Environment = var.environment
     Service     = each.key
   }
+}
+module "aws_load_balancer_controller" {
+  source = "./modules/aws-load-balancer-controller"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  cluster_name      = module.eks.cluster_name
+  region            = var.aws_region
+  vpc_id            = module.vpc.vpc_id
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_issuer_url   = module.eks.cluster_oidc_issuer_url
+  chart_version     = var.aws_load_balancer_controller_chart_version
+
+  depends_on = [module.eks, module.vpc]
 }

@@ -81,3 +81,8 @@ variable "external_secrets_chart_version" {
   description = "External Secrets Helm chart version"
   type        = string
 }
+variable "aws_load_balancer_controller_chart_version" {
+  description = "Controller chart version; update the vendored IAM policy when upgrading"
+  type        = string
+  default     = "1.14.1"
+}
