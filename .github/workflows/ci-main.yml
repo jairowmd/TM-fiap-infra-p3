@@ -182,6 +182,25 @@ jobs:
           format: table
 
       # ------------------------------------------------------------
+      # OIDC Inspection
+      # ------------------------------------------------------------
+      - name: Inspect OIDC claims
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('sts.amazonaws.com');
+            const claims = JSON.parse(
+              Buffer.from(token.split('.')[1], 'base64url').toString()
+            );
+            core.info(JSON.stringify({
+              sub: claims.sub,
+              aud: claims.aud,
+              repository: claims.repository,
+              ref: claims.ref
+            }, null, 2));  
+
+      # ------------------------------------------------------------
       # AWS / ECR
       # Publish on pushes and manual runs targeting main
       # ------------------------------------------------------------
