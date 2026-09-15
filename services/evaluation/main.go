@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"context"
 	"log"
 	"net/http"
@@ -64,7 +63,7 @@ func main() {
 	}
 
 	// --- Inicializa Clientes ---
-	
+
 	// Cliente Redis
 	opt, err := redis.ParseURL(redisURL)
 	if err != nil {
@@ -83,15 +82,7 @@ func main() {
 		if endpoint := os.Getenv("AWS_ENDPOINT_URL"); endpoint != "" {
 			awsConfig.Endpoint = aws.String(endpoint)
 			awsConfig.DisableSSL = aws.Bool(!strings.HasPrefix(endpoint, "https://"))
-			// LocalStack 0.14.x may expose a self-signed TLS endpoint on :4566.
-			if strings.HasPrefix(endpoint, "https://") {
-				awsConfig.HTTPClient = &http.Client{
-					Timeout: 5 * time.Second,
-					Transport: &http.Transport{
-						TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-					},
-				}
-			}
+			// HTTPS endpoints use normal certificate verification.
 		}
 		sess, err := session.NewSession(awsConfig)
 		if err != nil {
@@ -122,7 +113,12 @@ func main() {
 	mux.HandleFunc("/evaluate", app.evaluationHandler)
 
 	log.Printf("Serviço de Avaliação (Go) rodando na porta %s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	server := &http.Server{
+		Addr:              ":" + port,
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }

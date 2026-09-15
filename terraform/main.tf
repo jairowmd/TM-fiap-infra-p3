@@ -168,7 +168,6 @@ module "ecr" {
 
   repository_name = "${var.project_name}-${var.environment}-${each.key}"
   create_lifecycle_policy = false
-  repository_image_tag_mutability = "IMMUTABLE"
 
   tags = {
     Project     = var.project_name
