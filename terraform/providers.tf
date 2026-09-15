@@ -5,6 +5,11 @@ terraform {
 
   # Define os provedores obrigatórios que serão usados
   required_providers {
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.7"
+    }
+
     # Configuração do provedor AWS
     aws = {
       # Fonte oficial do provedor AWS mantido pela HashiCorp
