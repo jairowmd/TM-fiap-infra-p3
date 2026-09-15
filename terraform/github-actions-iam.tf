@@ -25,7 +25,7 @@ resource "aws_iam_role" "github_actions" {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
 
-          "token.actions.githubusercontent.com:sub" = "repo:jairowmd/TM-fiap-infra-p3:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub" = "repo:jairowmd@105881237/TM-fiap-infra-p3@1337897552:ref:refs/heads/main"
         }
       }
     }]
