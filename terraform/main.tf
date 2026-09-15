@@ -166,7 +166,7 @@ module "ecr" {
   source  = "terraform-aws-modules/ecr/aws"
   version = "2.0.0"
 
-  repository_name = "${var.project_name}-${var.environment}-${each.key}"
+  repository_name        = "${var.project_name}-${var.environment}-${each.key}"
   create_lifecycle_policy = false
 
   tags = {

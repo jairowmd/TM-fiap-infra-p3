@@ -47,7 +47,7 @@ resource "aws_iam_role_policy" "analytics" {
         ]
 
         Resource = module.dynamodb.table_arn
-        
+
       }
     ]
   })
