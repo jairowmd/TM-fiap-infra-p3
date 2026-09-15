@@ -169,7 +169,7 @@ jobs:
           IMAGE_NAME: ${{ matrix.service }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build \
+          docker build --pull --no-cache \
             -t "$IMAGE_NAME:$IMAGE_TAG" \
             "${{ matrix.path }}"
 
