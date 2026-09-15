@@ -11,6 +11,8 @@ RUN go build -o auth-service .
 
 FROM alpine:latest
 
+RUN apk upgrade --no-cache
+
 WORKDIR /app
 
 COPY --from=builder /app/auth-service ./
