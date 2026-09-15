@@ -4,41 +4,55 @@ metadata:
   name: togglemaster-ingress
   namespace: togglemaster
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/transforms.auth-service: >-
+      [{"type":"url-rewrite","urlRewriteConfig":{"rewrites":[{"regex":"^/auth(/|$)(.*)$","replace":"/$2"}]}}]
+    alb.ingress.kubernetes.io/transforms.flag-service: >-
+      [{"type":"url-rewrite","urlRewriteConfig":{"rewrites":[{"regex":"^/flags(/|$)(.*)$","replace":"/$2"}]}}]
+    alb.ingress.kubernetes.io/transforms.targeting-service: >-
+      [{"type":"url-rewrite","urlRewriteConfig":{"rewrites":[{"regex":"^/targeting(/|$)(.*)$","replace":"/$2"}]}}]
+    alb.ingress.kubernetes.io/transforms.evaluation-service: >-
+      [{"type":"url-rewrite","urlRewriteConfig":{"rewrites":[{"regex":"^/evaluate(/|$)(.*)$","replace":"/$2"}]}}]
+    alb.ingress.kubernetes.io/transforms.analytics-service: >-
+      [{"type":"url-rewrite","urlRewriteConfig":{"rewrites":[{"regex":"^/analytics(/|$)(.*)$","replace":"/$2"}]}}]
 spec:
-  ingressClassName: nginx
+  ingressClassName: alb
   rules:
     - http:
         paths:
-          - path: /auth(/|$)(.*)
+          - path: /auth
             pathType: Prefix
             backend:
               service:
                 name: auth-service
                 port:
                   number: 8001
-          - path: /flags(/|$)(.*)
+          - path: /flags
             pathType: Prefix
             backend:
               service:
                 name: flag-service
                 port:
                   number: 8002
-          - path: /targeting(/|$)(.*)
+          - path: /targeting
             pathType: Prefix
             backend:
               service:
                 name: targeting-service
                 port:
                   number: 8003
-          - path: /evaluate(/|$)(.*)
+          - path: /evaluate
             pathType: Prefix
             backend:
               service:
                 name: evaluation-service
                 port:
                   number: 8004
-          - path: /analytics(/|$)(.*)
+          - path: /analytics
             pathType: Prefix
             backend:
               service:

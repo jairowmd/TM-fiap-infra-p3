@@ -19,18 +19,19 @@ resource "aws_subnet" "public" {
   # Cria uma subnet para cada CIDR listado em var.public_subnet_cidrs
   count = length(var.public_subnet_cidrs)
 
-  vpc_id                  = aws_vpc.this.id
-  cidr_block              = var.public_subnet_cidrs[count.index]
-  availability_zone       = var.availability_zones[count.index]
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = var.public_subnet_cidrs[count.index]
+  availability_zone = var.availability_zones[count.index]
 
   map_public_ip_on_launch = true # Instâncias recebem IP público automaticamente
 
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
-    Project     = var.project_name
-    Environment = var.environment
-    Tier        = "Public"
+    Name                     = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
+    Project                  = var.project_name
+    Environment              = var.environment
+    Tier                     = "Public"
+    "kubernetes.io/role/elb" = "1"
   }
 }
 
@@ -43,10 +44,11 @@ resource "aws_subnet" "private" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-private-subnet-${count.index + 1}"
-    Project     = var.project_name
-    Environment = var.environment
-    Tier        = "Private"
+    Name                              = "${var.project_name}-${var.environment}-private-subnet-${count.index + 1}"
+    Project                           = var.project_name
+    Environment                       = var.environment
+    Tier                              = "Private"
+    "kubernetes.io/role/internal-elb" = "1"
   }
 }
 
