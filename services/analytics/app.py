@@ -11,7 +11,10 @@ from flask import Flask, jsonify
 from dotenv import load_dotenv
 
 # Configura o logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+)
 log = logging.getLogger(__name__)
 
 # Carrega .env para desenvolvimento local
@@ -23,7 +26,10 @@ SQS_QUEUE_URL = os.getenv("AWS_SQS_URL")
 DYNAMODB_TABLE_NAME = os.getenv("AWS_DYNAMODB_TABLE")
 
 if not all([AWS_REGION, SQS_QUEUE_URL, DYNAMODB_TABLE_NAME]):
-    log.critical("Erro: AWS_REGION, AWS_SQS_URL, e AWS_DYNAMODB_TABLE devem ser definidos.")
+    log.critical(
+        "Erro: AWS_REGION, AWS_SQS_URL, e AWS_DYNAMODB_TABLE "
+        "devem ser definidos."
+    )
     sys.exit(1)
 
 # --- Clientes Boto3 ---
@@ -38,7 +44,10 @@ try:
     else:
         sqs_client = session.client("sqs")
         dynamodb_client = session.client("dynamodb")
-    log.info(f"Clientes Boto3 inicializados na região {AWS_REGION} (endpoint={endpoint_url})")
+    log.info(
+        f"Clientes Boto3 inicializados na região "
+        f"{AWS_REGION} (endpoint={endpoint_url})"
+    )
 except NoCredentialsError:
     log.critical("Credenciais da AWS não encontradas. Verifique seu ambiente.")
     sys.exit(1)
@@ -85,7 +94,10 @@ def process_message(message):
         log.error(f"Erro ao decodificar JSON da mensagem ID: {message['MessageId']}")
         # Não deleta a mensagem, pode ser uma "poison pill"
     except ClientError as e:
-        log.error(f"Erro do Boto3 (DynamoDB ou SQS) ao processar {message['MessageId']}: {e}")
+        log.error(
+            "Erro do Boto3 (DynamoDB ou SQS) ao processar "
+            f"{message['MessageId']}: {e}"
+        )
         # Não deleta a mensagem, tenta novamente
     except Exception as e:
         log.error(f"Erro inesperado ao processar {message['MessageId']}: {e}")

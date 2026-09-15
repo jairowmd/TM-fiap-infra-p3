@@ -103,7 +103,7 @@ func (a *App) createKeyHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(CreateKeyResponse{
 		Name:    req.Name,
-		Key:     newKey, // Retorna a chave em texto plano pela última vez
+		Key:     newKey,
 		Message: "Guarde esta chave com segurança! Você não poderá vê-la novamente.",
 	}); err != nil {
 		log.Printf("Failed to write JSON response: %v", err)
