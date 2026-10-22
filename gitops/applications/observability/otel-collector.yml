@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otel-collector
+  namespace: argocd
+
+spec:
+  project: default
+  destination:
+    namespace: observability
+    server: https://kubernetes.default.svc
+
+  sources:
+    - repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+      chart: opentelemetry-collector
+      targetRevision: "0.175.1"
+      helm:
+        releaseName: otel-collector
+        valueFiles:
+          - $values/gitops/observability/otel-collector/values.yaml
+
+    - repoURL: https://github.com/jairowmd/TM-fiap-infra-p3.git
+      targetRevision: main
+      ref: values
+
+  # Start with manual synchronization, matching the Loki Application.
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

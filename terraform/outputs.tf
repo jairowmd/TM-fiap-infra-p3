@@ -98,3 +98,18 @@ output "ecr_repository_urls" {
 output "github_actions_role_arn" {
   value = aws_iam_role.github_actions.arn
 }
+
+output "loki_role_arn" {
+  description = "IRSA role ARN for the observability/loki ServiceAccount"
+  value       = aws_iam_role.loki.arn
+}
+
+output "loki_bucket_names" {
+  description = "S3 bucket names for Loki chunks and ruler storage"
+  value       = { for purpose, bucket in aws_s3_bucket.loki : purpose => bucket.id }
+}
+
+output "loki_aws_region" {
+  description = "AWS region to configure in the Loki Helm values"
+  value       = var.aws_region
+}

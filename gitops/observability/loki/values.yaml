@@ -1,0 +1,56 @@
+# Compatible with grafana/loki chart 6.30.1. Fill placeholders before syncing.
+deploymentMode: SingleBinary
+
+loki:
+  # Single-tenant API; AWS authentication is configured separately through IRSA.
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: s3
+    bucketNames:
+      chunks: "<LOKI_CHUNKS_BUCKET>"
+      ruler: "<LOKI_RULER_BUCKET>"
+    s3:
+      region: "<AWS_REGION>"
+      s3ForcePathStyle: false
+  schemaConfig:
+    configs:
+      - from: "2026-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+  limits_config:
+    retention_period: 30d
+  compactor:
+    working_directory: /var/loki/compactor
+    retention_enabled: true
+    delete_request_store: s3
+    delete_request_cancel_period: 24h
+
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+    # Requires an existing StorageClass and its volume provisioner.
+    storageClass: "<STORAGE_CLASS>"
+
+read:
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
+
+minio:
+  enabled: false
+
+serviceAccount:
+  create: true
+  name: loki
+  annotations:
+    eks.amazonaws.com/role-arn: "<LOKI_ROLE_ARN>"
