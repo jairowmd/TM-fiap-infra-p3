@@ -9,10 +9,10 @@ loki:
   storage:
     type: s3
     bucketNames:
-      chunks: "<LOKI_CHUNKS_BUCKET>"
-      ruler: "<LOKI_RULER_BUCKET>"
+      chunks: "tm-fiap-p4-dev-loki-chunks-20261027131825753800000002"
+      ruler: "tm-fiap-p4-dev-loki-ruler-20261027131825910400000003"
     s3:
-      region: "<AWS_REGION>"
+      region: "us-east-2"
       s3ForcePathStyle: false
   schemaConfig:
     configs:
@@ -37,7 +37,7 @@ singleBinary:
     enabled: true
     size: 10Gi
     # Requires an existing StorageClass and its volume provisioner.
-    storageClass: "<STORAGE_CLASS>"
+    storageClass: "gp2"
 
 read:
   replicas: 0
@@ -53,4 +53,4 @@ serviceAccount:
   create: true
   name: loki
   annotations:
-    eks.amazonaws.com/role-arn: "<LOKI_ROLE_ARN>"
+    eks.amazonaws.com/role-arn: "arn:aws:iam::443670030001:role/tm-fiap-p4-dev-loki"

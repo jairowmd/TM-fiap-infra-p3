@@ -2,8 +2,8 @@
 
 terraform {
   backend "s3" {
-    bucket = "tm-fiap-p3-dev-terraform-state-20260819115158628100000001"
+    bucket = "tm-fiap-p4-dev-terraform-state"
     key    = "dev/infra-core/terraform.tfstate"
-    region = "us-east-1"
+    region = "us-east-2"
   }
 }
