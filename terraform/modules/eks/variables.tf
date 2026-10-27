@@ -1,6 +1,6 @@
 # Identificação / Naming / Tagging
 variable "project_name" {
-  description = "Nome do projeto, usado para compor nomes e tags dos recursos (ex.: tm-fiap-p3)."
+  description = "Nome do projeto, usado para compor nomes e tags dos recursos (ex.: tm-fiap-p4)."
   type        = string
 }
 

@@ -23,6 +23,9 @@ spec:
       ref: values
 
   syncPolicy:
-    # Manual sync until AWS outputs and StorageClass placeholders are filled.
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true

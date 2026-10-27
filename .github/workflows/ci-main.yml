@@ -12,11 +12,11 @@ permissions:
   id-token: write
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: us-east-2
   GO_VERSION: "1.24.13"
   PYTHON_VERSION: "3.9"
 
-  ECR_PREFIX: tm-fiap-p3-dev
+  ECR_PREFIX: tm-fiap-p4-dev
 
 concurrency:
   group: ci-main-${{ github.ref }}
