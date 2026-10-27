@@ -20,7 +20,7 @@ spec:
       serviceAccountName: analytics-sa
       containers:
         - name: analytics-service
-          image: 546238497113.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-analytics:a68f20773a9c3da3d8f81acd426c893a5d681b9a
+          image: 443670030001.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-analytics:a68f20773a9c3da3d8f81acd426c893a5d681b9a
           ports:
             - containerPort: 8005
           resources:

@@ -65,6 +65,7 @@ variable "db_password" {
   description = "Master password for the PostgreSQL instances; set with TF_VAR_db_password"
   type        = string
   sensitive   = true
+  default = "ToggleMaster_DB#2026!"
 
   validation {
     condition = (

@@ -1,0 +1,100 @@
+# Compatible with opentelemetry-collector chart 0.175.1.
+mode: deployment
+replicaCount: 1
+fullnameOverride: otel-collector
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+  tag: "0.161.0"
+command:
+  name: otelcol-contrib
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+# No AWS credentials or Kubernetes API access are needed for OTLP ingestion.
+serviceAccount:
+  create: true
+  automountServiceAccountToken: false
+
+service:
+  type: ClusterIP
+
+ports:
+  otlp:
+    enabled: true
+    containerPort: 4317
+    servicePort: 4317
+    hostPort: null
+    protocol: TCP
+  otlp-http:
+    enabled: true
+    containerPort: 4318
+    servicePort: 4318
+    hostPort: null
+    protocol: TCP
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+  metrics:
+    enabled: false
+
+config:
+  receivers:
+    # Remove the chart's default receivers outside the initial OTLP scope.
+    jaeger: null
+    zipkin: null
+    prometheus: null
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+  processors:
+    memory_limiter:
+      check_interval: 1s
+      limit_mib: 192
+      spike_limit_mib: 48
+      limit_percentage: null
+      spike_limit_percentage: null
+    batch:
+      timeout: 5s
+      send_batch_size: 512
+      send_batch_max_size: 1024
+
+  exporters:
+    # Temporary diagnostic output, not persistent telemetry storage.
+    debug:
+      verbosity: detailed
+
+  extensions:
+    # Required by the chart's readiness and liveness probes.
+    health_check:
+      endpoint: 0.0.0.0:13133
+
+  service:
+    extensions: [health_check]
+    pipelines:
+      traces:
+        receivers: [otlp]
+        processors: [memory_limiter, batch]
+        exporters: [debug]
+      metrics:
+        receivers: [otlp]
+        processors: [memory_limiter, batch]
+        exporters: [debug]
+      logs:
+        receivers: [otlp]
+        processors: [memory_limiter, batch]
+        exporters: [debug]
