@@ -20,7 +20,7 @@ spec:
       serviceAccountName: evaluation-sa
       containers:
         - name: evaluation-service
-          image: 443670030001.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-evaluation:7dcedc3c9cf154166d876d89deed0d24965c2f80
+          image: 443670030001.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-evaluation:fdec0405f0289003ab22957f65c3682255206276
           ports:
             - containerPort: 8004
           resources:

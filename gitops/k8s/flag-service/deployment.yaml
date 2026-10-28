@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: flag-service
-          image: 443670030001.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-flag:7dcedc3c9cf154166d876d89deed0d24965c2f80
+          image: 443670030001.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-flag:fdec0405f0289003ab22957f65c3682255206276
           ports:
             - containerPort: 8002
           resources:
