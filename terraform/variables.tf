@@ -4,6 +4,12 @@ variable "aws_region" {
   type        = string
 }
 
+variable "aws_profile" {
+  description = "AWS profile to use for authentication"
+  type        = string
+}
+
+
 # Nome do projeto
 variable "project_name" {
   description = "Name of the project"
