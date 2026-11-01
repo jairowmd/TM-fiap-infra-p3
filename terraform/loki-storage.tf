@@ -7,10 +7,11 @@ locals {
   }
 }
 
+
 resource "aws_s3_bucket" "loki" {
   for_each = toset(["chunks", "ruler"])
 
-  bucket_prefix = "${var.project_name}-${var.environment}-loki-${each.key}-"
+  bucket_prefix = "${var.project_name}-${var.environment}-loki-${each.key}-958"
   force_destroy = false
   tags          = local.loki_tags
 }
