@@ -60,6 +60,18 @@ resource "aws_eks_access_policy_association" "admin" {
   depends_on = [aws_eks_access_entry.admin]
 }
 
+resource "aws_eks_pod_identity_association" "ebs_csi" {
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = "kube-system"
+  service_account = "ebs-csi-controller-sa"
+  role_arn        = aws_iam_role.ebs_csi.arn
+
+  depends_on = [
+    aws_iam_role_policy_attachment.ebs_csi,
+    aws_eks_addon.pod_identity_agent
+  ]
+}
+
 # Managed Node Group (worker nodes)
 
 resource "aws_eks_node_group" "this" {
@@ -95,6 +107,26 @@ resource "aws_eks_node_group" "this" {
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]
   }
+}
+
+resource "kubernetes_storage_class_v1" "gp3" {
+  metadata {
+    name = "gp3"
+  }
+
+  storage_provisioner = "ebs.csi.aws.com"
+
+  volume_binding_mode    = "WaitForFirstConsumer"
+  allow_volume_expansion = true
+
+  parameters = {
+    type   = "gp3"
+    fsType = "ext4"
+  }
+
+  depends_on = [
+    aws_eks_addon.ebs_csi_driver
+  ]
 }
 
 resource "aws_iam_openid_connect_provider" "this" {
@@ -155,5 +187,18 @@ resource "aws_eks_addon" "pod_identity_agent" {
 
   depends_on = [
     aws_eks_node_group.this
+  ]
+}
+resource "aws_eks_addon" "ebs_csi_driver" {
+  cluster_name                = aws_eks_cluster.this.name
+  addon_name                  = "aws-ebs-csi-driver"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  tags = local.tags
+
+  depends_on = [
+    aws_eks_node_group.this,
+    aws_eks_addon.pod_identity_agent
   ]
 }

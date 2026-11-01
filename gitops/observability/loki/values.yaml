@@ -37,7 +37,7 @@ singleBinary:
     enabled: true
     size: 10Gi
     # Requires an existing StorageClass and its volume provisioner.
-    storageClass: "gp2"
+    storageClass: "gp3"
 
 read:
   replicas: 0
