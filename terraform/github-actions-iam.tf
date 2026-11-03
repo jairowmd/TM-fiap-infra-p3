@@ -1,3 +1,9 @@
+# Subject do token OIDC para workflows rodando na main deste repositório.
+# Usado pela role de CI e pela role de Self-Healing (self-healing-iam.tf).
+locals {
+  github_actions_main_sub = "repo:jairowmd@105881237/TM-fiap-infra-p3@1337897552:ref:refs/heads/main"
+}
+
 resource "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
 
@@ -25,7 +31,7 @@ resource "aws_iam_role" "github_actions" {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
 
-          "token.actions.githubusercontent.com:sub" = "repo:jairowmd@105881237/TM-fiap-infra-p3@1337897552:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub" = local.github_actions_main_sub
         }
       }
     }]

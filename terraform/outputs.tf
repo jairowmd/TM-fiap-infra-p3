@@ -99,6 +99,11 @@ output "github_actions_role_arn" {
   value = aws_iam_role.github_actions.arn
 }
 
+output "self_healing_role_arn" {
+  description = "Role assumed by the Self-Healing workflow; must match SELF_HEALING_ROLE_ARN in .github/workflows/self-healing.yml"
+  value       = aws_iam_role.self_healing.arn
+}
+
 output "loki_role_arn" {
   description = "IRSA role ARN for the observability/loki ServiceAccount"
   value       = aws_iam_role.loki.arn
