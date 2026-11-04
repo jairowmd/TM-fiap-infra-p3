@@ -14,5 +14,5 @@ data:
   TARGETING_PORT: "8003"
   EVALUATION_PORT: "8004"
   ANALYTICS_PORT: "8005"
-  AWS_REGION: "us-east-1"
+  AWS_REGION: "us-east-2"
   DYNAMODB_TABLE: "ToggleMasterAnalytics"
