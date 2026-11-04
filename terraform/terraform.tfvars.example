@@ -1,5 +1,6 @@
 # Região da AWS onde os recursos serão criados
-aws_region = "us-east-1"
+aws_region  = "us-east-2"
+aws_profile = "mateus-fase4"
 
 # Nome do projeto
 project_name = "tm-fiap-p4"
@@ -24,8 +25,8 @@ private_subnet_cidrs = [
 
 # Zonas de disponibilidade
 availability_zones = [
-  "us-east-1a",
-  "us-east-1b"
+  "us-east-2a",
+  "us-east-2b"
 ]
 
 # Versão do Kubernetes utilizada pelo EKS
@@ -34,6 +35,7 @@ eks_kubernetes_version = "1.34"
 # Usuários ou roles que terão acesso administrativo ao EKS.
 # Descubra o ARN executando:
 # aws sts get-caller-identity --query Arn --output text
+# Use o mesmo --profile configurado acima.
 #
 # Não coloque o ARN real neste arquivo de exemplo.
 eks_cluster_admin_principal_arns = [

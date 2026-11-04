@@ -35,7 +35,8 @@ terraform {
 provider "aws" {
   # Região da AWS onde os recursos serão criados
   # O valor é obtido da variável 'aws_region' definida em variables.tf ou terraform.tfvars
-  region = var.aws_region
+  region  = var.aws_region
+  profile = var.aws_profile
 }
 
 
@@ -58,7 +59,9 @@ provider "helm" {
         "--cluster-name",
         module.eks.cluster_name,
         "--region",
-        var.aws_region
+        var.aws_region,
+        "--profile",
+        var.aws_profile
       ]
     }
   }
