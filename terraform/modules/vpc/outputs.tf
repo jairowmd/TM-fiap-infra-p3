@@ -23,4 +23,11 @@ output "private_subnet_ids" {
   description = "IDs of the private subnets"
   # Valor retornado: lista de IDs de todas as subnets privadas criadas
   value = aws_subnet.private[*].id
+
+  # Consumers need working egress, not just allocated subnets. During destroy,
+  # keep routes/NAT/IGW available until their consumers have finished cleanup.
+  depends_on = [
+    aws_route_table_association.private,
+    aws_route_table_association.public
+  ]
 }

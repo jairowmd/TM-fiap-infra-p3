@@ -200,6 +200,6 @@ resource "aws_eks_addon" "ebs_csi_driver" {
 
   depends_on = [
     aws_eks_node_group.this,
-    aws_eks_addon.pod_identity_agent
+    aws_eks_pod_identity_association.ebs_csi
   ]
 }

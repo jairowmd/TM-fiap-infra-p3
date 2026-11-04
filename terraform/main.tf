@@ -92,7 +92,13 @@ module "argocd" {
 
   depends_on = [
     module.external_secrets,
-    module.aws_load_balancer_controller
+    module.aws_load_balancer_controller,
+    module.ecr,
+    aws_eks_pod_identity_association.analytics,
+    aws_eks_pod_identity_association.evaluation,
+    aws_iam_role_policy_attachment.loki_s3,
+    aws_s3_bucket_public_access_block.loki,
+    aws_s3_bucket_server_side_encryption_configuration.loki
   ]
 }
 

@@ -14,7 +14,13 @@ resource "helm_release" "bootstrap" {
 
   depends_on = [helm_release.argocd]
 
+  # Helm waits for the root Application to disappear on uninstall. Its foreground
+  # Argo CD finalizer keeps it alive until the child Applications finish cleanup.
   atomic  = true
   wait    = true
-  timeout = 600
+  timeout = 1800
+
+  timeouts = {
+    delete = "40m"
+  }
 }

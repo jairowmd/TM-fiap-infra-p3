@@ -47,7 +47,7 @@ resource "aws_iam_role_policy" "analytics" {
         ]
 
         Resource = module.dynamodb.table_arn
-        
+
       }
     ]
   })
@@ -58,6 +58,8 @@ resource "aws_eks_pod_identity_association" "analytics" {
   namespace       = "togglemaster"
   service_account = "analytics-sa"
   role_arn        = aws_iam_role.analytics.arn
+
+  depends_on = [module.eks, aws_iam_role_policy.analytics]
 }
 
 
@@ -110,4 +112,6 @@ resource "aws_eks_pod_identity_association" "evaluation" {
   namespace       = "togglemaster"
   service_account = "evaluation-sa"
   role_arn        = aws_iam_role.evaluation.arn
+
+  depends_on = [module.eks, aws_iam_role_policy.evaluation]
 }
