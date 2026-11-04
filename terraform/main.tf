@@ -130,7 +130,8 @@ module "secrets" {
   environment  = var.environment
 
   secret_values = {
-    MASTER_KEY = random_password.auth_master_key.result
+    MASTER_KEY             = random_password.auth_master_key.result
+    GRAFANA_ADMIN_PASSWORD = random_password.grafana_admin.result
 
     DB_USERNAME = var.db_username
     DB_PASSWORD = var.db_password
@@ -205,5 +206,11 @@ module "aws_load_balancer_controller" {
 # Generated once and retained in Terraform state; consumed only by auth.
 resource "random_password" "auth_master_key" {
   length  = 48
+  special = false
+}
+
+# Grafana admin password. Synced to observability/grafana-admin by External Secrets.
+resource "random_password" "grafana_admin" {
+  length  = 32
   special = false
 }

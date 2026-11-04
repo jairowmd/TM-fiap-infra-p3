@@ -92,7 +92,13 @@ config:
 
   exporters:
     otlphttp/loki:
-      endpoint: "http://loki:3100/oltp"
+      endpoint: "http://loki:3100/otlp"
+      tls:
+        insecure: true
+    # Prometheus native OTLP receiver (enableOTLPReceiver in kube-prometheus-stack).
+    # The exporter appends /v1/metrics -> /api/v1/otlp/v1/metrics.
+    otlphttp/prometheus:
+      endpoint: "http://prometheus-operated.observability.svc.cluster.local:9090/api/v1/otlp"
       tls:
         insecure: true
     # Temporary diagnostic output, not persistent telemetry storage.
@@ -114,8 +120,8 @@ config:
         exporters: [debug]
       metrics:
         receivers: [otlp]
-        processors: [memory_limiter, batch]
-        exporters: [debug]
+        processors: [k8sattributes, memory_limiter, batch]
+        exporters: [otlphttp/prometheus]
       logs:
         processors: [k8sattributes, memory_limiter, batch]
         exporters: [otlphttp/loki]

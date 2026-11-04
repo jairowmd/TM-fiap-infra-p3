@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-config
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+
+spec:
+  project: default
+
+  # Dashboards (ConfigMaps) and the Grafana admin credentials (ExternalSecret).
+  source:
+    repoURL: https://github.com/jairowmd/TM-fiap-infra-p3.git
+    targetRevision: main
+    path: gitops/observability/grafana
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

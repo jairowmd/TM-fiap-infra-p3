@@ -2,6 +2,8 @@
 
 Procedimento de criação, destruição e diagnóstico: [Lifecycle da infraestrutura](docs/infrastructure-lifecycle.md).
 
+Métricas, Grafana e dashboard: [Prometheus + Grafana](docs/observability-prometheus-grafana.md).
+
 [![Terraform](https://img.shields.io/badge/Terraform-≥1.0-blue.svg)](https://www.terraform.io/)
 [![AWS](https://img.shields.io/badge/AWS-Provider-orange.svg)](https://aws.amazon.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.34+-green.svg)](https://kubernetes.io/)
