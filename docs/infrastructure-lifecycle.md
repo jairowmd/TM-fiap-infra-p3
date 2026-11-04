@@ -46,7 +46,7 @@ Execute na raiz do repositório, no Ubuntu/WSL, com Terraform, AWS CLI, Helm e
 kubectl disponíveis:
 
 ```bash
-export AWS_PROFILE=mateus-fase4
+export AWS_PROFILE=aws-gp12-sa
 export AWS_REGION=us-east-2
 export TF_VAR_aws_profile="$AWS_PROFILE"
 aws sts get-caller-identity
@@ -56,7 +56,7 @@ terraform -chdir=terraform validate
 terraform -chdir=terraform plan -out=lifecycle.tfplan
 ```
 
-Confirme a conta `443670030001`. O principal retornado por STS precisa estar em
+Confirme a conta `786197525471`. O principal retornado por STS precisa estar em
 `eks_cluster_admin_principal_arns`; para uma sessão de role, configure o ARN IAM
 da role, não o ARN STS da sessão. A seleção de profile é a mesma nos providers
 AWS, Helm e Kubernetes. O backend S3 usa `AWS_PROFILE` separadamente.

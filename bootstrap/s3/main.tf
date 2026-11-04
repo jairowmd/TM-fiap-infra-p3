@@ -1,9 +1,11 @@
 
 # Cria um bucket S3 que será usado para armazenar o Terraform state
-# bucket_prefix: gera um nome único para o bucket baseado no projeto e ambiente, garantindo que não haja conflito.
+# bucket: nome único e previsível (sufixo = account ID), igual ao de terraform/backend.tf.
 # tags: adiciona metadados úteis para identificar o recurso (nome, projeto, ambiente, responsável e propósito).
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "terraform_state" {
-  bucket_prefix = "${var.project_name}-${var.environment}-terraform-state-"
+  bucket = "${var.project_name}-${var.environment}-tfstate-${data.aws_caller_identity.current.account_id}"
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-terraform-state"

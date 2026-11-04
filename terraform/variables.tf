@@ -85,8 +85,9 @@ variable "db_password" {
 }
 
 variable "external_secrets_chart_version" {
-  description = "External Secrets Helm chart version"
+  description = "External Secrets Helm chart version (>= 0.17, the manifests use external-secrets.io/v1)"
   type        = string
+  default     = "2.14.0"
 }
 variable "aws_load_balancer_controller_chart_version" {
   description = "Controller chart version; update the vendored IAM policy when upgrading"
