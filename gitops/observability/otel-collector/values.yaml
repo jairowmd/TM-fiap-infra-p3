@@ -26,7 +26,11 @@ serviceAccount:
   create: true
   automountServiceAccountToken: true
 
+# In daemonset mode the chart only creates the Service when explicitly enabled.
+# Without it the apps cannot reach otel-collector.observability.svc:4317/4318.
+# The chart sets internalTrafficPolicy: Local, so each pod talks to its node's agent.
 service:
+  enabled: true
   type: ClusterIP
 
 ports:
