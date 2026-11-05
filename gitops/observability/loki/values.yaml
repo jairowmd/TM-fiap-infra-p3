@@ -69,4 +69,4 @@ serviceAccount:
   create: true
   name: loki
   annotations:
-    eks.amazonaws.com/role-arn: "arn:aws:iam::443670030001:role/tm-fiap-p4-dev-loki"
+    eks.amazonaws.com/role-arn: "arn:aws:iam::786197525471:role/tm-fiap-p4-dev-loki"
