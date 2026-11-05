@@ -118,7 +118,9 @@ module "external_secrets" {
   ]
 
   depends_on = [
-    module.eks
+    module.eks,
+    # The chart creates Services admitted by the load balancer webhook.
+    module.aws_load_balancer_controller
   ]
 }
 
