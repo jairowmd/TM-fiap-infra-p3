@@ -1,0 +1,39 @@
+# Permissões da automação de Self-Healing (.github/workflows/self-healing.yml).
+# A role IAM é mapeada para o grupo togglemaster-self-healing pelo EKS Access
+# Entry (terraform/self-healing-iam.tf). Só permite reiniciar os 5 deployments.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: self-healing
+  namespace: togglemaster
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames:
+      - auth-service
+      - flag-service
+      - targeting-service
+      - evaluation-service
+      - analytics-service
+    verbs: ["get", "patch"]
+  # rollout status acompanha o deployment e os ReplicaSets via watch
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: self-healing
+  namespace: togglemaster
+subjects:
+  - kind: Group
+    name: togglemaster-self-healing
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: self-healing
+  apiGroup: rbac.authorization.k8s.io

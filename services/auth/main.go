@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync/atomic"
 	"time"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -15,6 +16,7 @@ import (
 type App struct {
 	DB        *sql.DB
 	MasterKey string
+	Failing   atomic.Bool // falha injetada para o teste de Self-Healing (chaos.go)
 }
 
 func main() {
@@ -58,11 +60,14 @@ func main() {
 	mux.HandleFunc("/health", app.healthHandler)
 
 	// Endpoint público para validar uma chave
-	mux.HandleFunc("/validate", app.validateKeyHandler)
+	mux.Handle("/validate", app.chaosMiddleware(http.HandlerFunc(app.validateKeyHandler)))
 
 	// Endpoints de "admin" para criar/gerenciar chaves
 	// Eles são protegidos pelo middleware de autenticação
 	mux.Handle("/admin/keys", app.masterKeyAuthMiddleware(http.HandlerFunc(app.createKeyHandler)))
+
+	// Liga/desliga a falha usada na demonstração de Self-Healing
+	mux.Handle("/admin/chaos", app.masterKeyAuthMiddleware(http.HandlerFunc(app.chaosHandler)))
 
 	log.Printf("Serviço de Autenticação (Go) rodando na porta %s", port)
 	server := &http.Server{

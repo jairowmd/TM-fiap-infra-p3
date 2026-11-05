@@ -1,0 +1,102 @@
+name: Self-Healing
+
+# Disparado pelo webhook do alerta (Grafana -> API do GitHub) ou manualmente.
+# Payload esperado no repository_dispatch:
+#   {"event_type": "self-healing",
+#    "client_payload": {"deployment": "auth-service", "alertname": "...", "status": "firing"}}
+on:
+  repository_dispatch:
+    types: [self-healing]
+  workflow_dispatch:
+    inputs:
+      deployment:
+        description: Deployment a reiniciar
+        type: choice
+        default: auth-service
+        options:
+          - auth-service
+          - flag-service
+          - targeting-service
+          - evaluation-service
+          - analytics-service
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-2
+  EKS_CLUSTER_NAME: tm-fiap-p4-dev-eks
+  NAMESPACE: togglemaster
+  # Output self_healing_role_arn do Terraform. ARN não é segredo.
+  SELF_HEALING_ROLE_ARN: arn:aws:iam::443670030001:role/tm-fiap-p4-dev-self-healing
+
+jobs:
+  rollout-restart:
+    name: Rollout restart
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Um restart por deployment de cada vez; alertas repetidos entram na fila.
+    concurrency:
+      group: self-healing-${{ github.event.client_payload.deployment || inputs.deployment }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Resolve alert payload
+        id: alert
+        env:
+          # Valores do payload passam por env, nunca interpolados no script.
+          PAYLOAD_DEPLOYMENT: ${{ github.event.client_payload.deployment || inputs.deployment }}
+          PAYLOAD_ALERTNAME: ${{ github.event.client_payload.alertname || 'manual' }}
+          PAYLOAD_STATUS: ${{ github.event.client_payload.status || 'firing' }}
+        run: |
+          set -euo pipefail
+          echo "deployment=$PAYLOAD_DEPLOYMENT" >> "$GITHUB_OUTPUT"
+          echo "status=$PAYLOAD_STATUS" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Self-Healing"
+            echo ""
+            echo "| Campo | Valor |"
+            echo "| --- | --- |"
+            echo "| Evento | \`${GITHUB_EVENT_NAME}\` |"
+            echo "| Alerta | \`${PAYLOAD_ALERTNAME}\` |"
+            echo "| Status | \`${PAYLOAD_STATUS}\` |"
+            echo "| Deployment | \`${PAYLOAD_DEPLOYMENT}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Skip resolved alerts
+        if: steps.alert.outputs.status != 'firing'
+        env:
+          STATUS: ${{ steps.alert.outputs.status }}
+        run: echo "Alerta com status '$STATUS', nenhuma ação necessária."
+
+      - name: Checkout
+        if: steps.alert.outputs.status == 'firing'
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        if: steps.alert.outputs.status == 'firing'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.SELF_HEALING_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        if: steps.alert.outputs.status == 'firing'
+        run: aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
+
+      - name: Run runbook
+        if: steps.alert.outputs.status == 'firing'
+        env:
+          DEPLOYMENT: ${{ steps.alert.outputs.deployment }}
+        run: |
+          set -euo pipefail
+          bash scripts/self-healing/rollout-restart.sh "$DEPLOYMENT" "$NAMESPACE" | tee runbook.log
+          {
+            echo ""
+            echo "### Execução do runbook"
+            echo '```'
+            cat runbook.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
