@@ -56,7 +56,7 @@ terraform -chdir=terraform validate
 terraform -chdir=terraform plan -out=lifecycle.tfplan
 ```
 
-Confirme a conta `443670030001`. O principal retornado por STS precisa estar em
+Confirme a conta `786197525471`. O principal retornado por STS precisa estar em
 `eks_cluster_admin_principal_arns`; para uma sessão de role, configure o ARN IAM
 da role, não o ARN STS da sessão. A seleção de profile é a mesma nos providers
 AWS, Helm e Kubernetes. O backend S3 usa `AWS_PROFILE` separadamente.
