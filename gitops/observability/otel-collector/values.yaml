@@ -26,7 +26,11 @@ serviceAccount:
   create: true
   automountServiceAccountToken: true
 
+# In daemonset mode the chart only creates the Service when explicitly enabled.
+# Without it the apps cannot reach otel-collector.observability.svc:4317/4318.
+# The chart sets internalTrafficPolicy: Local, so each pod talks to its node's agent.
 service:
+  enabled: true
   type: ClusterIP
 
 ports:
@@ -95,6 +99,12 @@ config:
       endpoint: "http://loki:3100/otlp"
       tls:
         insecure: true
+    # Prometheus native OTLP receiver (enableOTLPReceiver in kube-prometheus-stack).
+    # The exporter appends /v1/metrics -> /api/v1/otlp/v1/metrics.
+    otlphttp/prometheus:
+      endpoint: "http://prometheus-operated.observability.svc.cluster.local:9090/api/v1/otlp"
+      tls:
+        insecure: true
     # Temporary diagnostic output, not persistent telemetry storage.
     
     debug:
@@ -114,8 +124,8 @@ config:
         exporters: [debug]
       metrics:
         receivers: [otlp]
-        processors: [memory_limiter, batch]
-        exporters: [debug]
+        processors: [k8sattributes, memory_limiter, batch]
+        exporters: [otlphttp/prometheus]
       logs:
         processors: [k8sattributes, memory_limiter, batch]
         exporters: [otlphttp/loki]

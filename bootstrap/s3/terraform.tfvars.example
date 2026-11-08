@@ -1,6 +1,7 @@
 # criado esse arquivo para nao subir o terraform.tfvars original
 # Região da AWS onde os recursos serão criados
-aws_region   = "us-east-1"
+aws_region   = "us-east-2"
+aws_profile  = "aws-gp12-sa"
 
 # Nome do projeto, usado para identificar recursos
 project_name = "tm-fiap-p4"

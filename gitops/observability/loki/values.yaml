@@ -9,8 +9,8 @@ loki:
   storage:
     type: s3
     bucketNames:
-      chunks: "tm-fiap-p4-dev-loki-chunks-9572"
-      ruler: "tm-fiap-p4-dev-loki-ruler-9572"
+      chunks: "tm-fiap-p4-dev-loki-chunks-786197525471"
+      ruler: "tm-fiap-p4-dev-loki-ruler-786197525471"
     s3:
       region: "us-east-2"
       s3ForcePathStyle: false

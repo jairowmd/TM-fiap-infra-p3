@@ -1,6 +1,6 @@
 # Região da AWS onde os recursos serão criados
 aws_region  = "us-east-2"
-aws_profile = "mateus-fase4"
+aws_profile = "aws-gp12-sa"
 
 # Nome do projeto
 project_name = "tm-fiap-p4"
