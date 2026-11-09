@@ -5,6 +5,8 @@ namespace: observability
 
 resources:
   - external-secret.yaml
+  # Regra AuthService5xx + contact point do Self-Healing (sidecar de alertas).
+  - alerting/self-healing.yaml
 
 # Every JSON in dashboards/ becomes a ConfigMap that the Grafana sidecar
 # (kube-prometheus-stack) imports into the "ToggleMaster" folder.
