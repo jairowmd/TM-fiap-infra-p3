@@ -135,9 +135,20 @@ grafana:
     limits:
       memory: 384Mi
 
-  # Dashboards and datasources are provisioned from Git, no state to persist.
+  # Dashboards, datasources and alerting are provisioned from Git, no state to persist.
   persistence:
     enabled: false
+
+  # GitHub token for the self-healing contact point (gitops/observability/grafana/
+  # alerting/self-healing.yaml), synced by the grafana-self-healing ExternalSecret.
+  # optional: Grafana still starts before the token exists; only the webhook fails.
+  # Env vars are read at startup: restart Grafana after rotating the token.
+  envValueFrom:
+    GITHUB_DISPATCH_TOKEN:
+      secretKeyRef:
+        name: grafana-self-healing
+        key: github-dispatch-token
+        optional: true
 
   grafana.ini:
     analytics:
@@ -163,6 +174,12 @@ grafana:
       uid: prometheus
       alertmanager:
         enabled: false
+    # Alert rules and contact points from ConfigMaps labeled grafana_alert=1.
+    alerts:
+      enabled: true
+      label: grafana_alert
+      labelValue: "1"
+      searchNamespace: observability
 
   additionalDataSources:
     - name: Loki

@@ -134,6 +134,8 @@ module "secrets" {
   secret_values = {
     MASTER_KEY             = random_password.auth_master_key.result
     GRAFANA_ADMIN_PASSWORD = random_password.grafana_admin.result
+    # Lido pelo Grafana (ExternalSecret grafana-self-healing) para o webhook de Self-Healing.
+    GITHUB_DISPATCH_TOKEN = var.github_dispatch_token
 
     DB_USERNAME = var.db_username
     DB_PASSWORD = var.db_password
