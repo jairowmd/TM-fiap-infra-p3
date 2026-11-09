@@ -16,3 +16,8 @@ data:
   ANALYTICS_PORT: "8005"
   AWS_REGION: "us-east-2"
   DYNAMODB_TABLE: "ToggleMasterAnalytics"
+  # OpenTelemetry: todos os serviços enviam traces/métricas ao OTel Collector,
+  # que encaminha para o New Relic (APM).
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.observability.svc.cluster.local:4318"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_RESOURCE_ATTRIBUTES: "service.namespace=togglemaster,deployment.environment=dev"

@@ -114,7 +114,8 @@ module "external_secrets" {
   oidc_issuer_url   = module.eks.cluster_oidc_issuer_url
 
   secret_arns = [
-    module.secrets.secret_arn
+    module.secrets.secret_arn,
+    aws_secretsmanager_secret.observability.arn
   ]
 
   depends_on = [
