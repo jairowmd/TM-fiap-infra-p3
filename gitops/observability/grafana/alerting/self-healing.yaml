@@ -26,9 +26,9 @@ data:
       - orgId: 1
         name: self-healing-github
         receivers:
+          # GitHub: recuperação automática.
           - uid: self-healing-github
             type: webhook
-            # O workflow ignora "resolved"; não precisa gastar uma chamada.
             disableResolveMessage: true
             settings:
               url: https://api.github.com/repos/jairowmd/TM-fiap-infra-p3/dispatches
@@ -38,7 +38,6 @@ data:
               headers:
                 Accept: application/vnd.github+json
                 X-GitHub-Api-Version: "2022-11-28"
-              # Formato esperado pelo repository_dispatch (event_type + client_payload).
               payload:
                 template: |
                   {
@@ -50,6 +49,30 @@ data:
                     }
                   }
 
+          # PagerDuty: abertura e resolução de incidentes.
+          - uid: pagerduty-togglemaster
+            type: pagerduty
+            settings:
+              severity: critical
+              component: auth-service
+              group: ToggleMaster
+              summary: |
+                {{ template "default.message" . }}
+            secure_settings:
+              integrationKey: $PAGERDUTY_INTEGRATION_KEY
+
+          # Slack: notificações no canal de incidentes.
+          - uid: slack-togglemaster
+            type: slack
+            settings:
+              recipient: "#incidentes-togglemaster"
+              username: ToggleMaster Grafana
+              title: |
+                {{ template "slack.default.title" . }}
+              text: |
+                {{ template "slack.default.text" . }}
+            secure_settings:
+              url: $SLACK_WEBHOOK_URL
     groups:
       - orgId: 1
         name: self-healing
