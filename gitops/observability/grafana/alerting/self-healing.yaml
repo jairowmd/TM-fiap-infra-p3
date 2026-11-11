@@ -26,9 +26,9 @@ data:
       - orgId: 1
         name: self-healing-github
         receivers:
+          # GitHub: recuperação automática.
           - uid: self-healing-github
             type: webhook
-            # O workflow ignora "resolved"; não precisa gastar uma chamada.
             disableResolveMessage: true
             settings:
               url: https://api.github.com/repos/jairowmd/TM-fiap-infra-p3/dispatches
@@ -38,7 +38,6 @@ data:
               headers:
                 Accept: application/vnd.github+json
                 X-GitHub-Api-Version: "2022-11-28"
-              # Formato esperado pelo repository_dispatch (event_type + client_payload).
               payload:
                 template: |
                   {
@@ -72,7 +71,6 @@ data:
                 {{ template "slack.default.title" . }}
               text: |
                 {{ template "slack.default.text" . }}
-
     groups:
       - orgId: 1
         name: self-healing

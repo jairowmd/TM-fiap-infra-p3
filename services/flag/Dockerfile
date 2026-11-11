@@ -14,4 +14,6 @@ COPY . .
 
 EXPOSE 8002
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8002", "app:app"]
+# "opentelemetry-instrument" ativa a auto-instrumentação (Flask, requests,
+# psycopg2). Destino e nome do serviço vêm das variáveis OTEL_* do deployment.
+CMD ["opentelemetry-instrument", "gunicorn", "--bind", "0.0.0.0:8002", "app:app"]

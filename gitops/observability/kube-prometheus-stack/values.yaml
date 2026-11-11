@@ -150,6 +150,18 @@ grafana:
         key: github-dispatch-token
         optional: true
 
+    PAGERDUTY_INTEGRATION_KEY:
+       secretKeyRef:
+        name: grafana-notifications
+        key: pagerduty-integration-key
+        optional: true
+
+    SLACK_WEBHOOK_URL:
+       secretKeyRef:
+        name: grafana-notifications
+        key: slack-webhook-url
+        optional: true
+
   grafana.ini:
     analytics:
       check_for_updates: false

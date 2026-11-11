@@ -20,7 +20,7 @@ spec:
       serviceAccountName: evaluation-sa
       containers:
         - name: evaluation-service
-          image: 786197525471.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-evaluation:4ade847db180a9628cfff1452b05ff1a913826ad
+          image: 786197525471.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-evaluation:4d3919601ca196d1cca543d05412b870caae997c
           ports:
             - containerPort: 8004
           resources:
@@ -31,6 +31,24 @@ spec:
               cpu: "300m"
               memory: "256Mi"
           env:
+            # --- OpenTelemetry (APM / tracing distribuído) ---
+            - name: OTEL_SERVICE_NAME
+              value: "evaluation-service"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: togglemaster-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  name: togglemaster-config
+                  key: OTEL_EXPORTER_OTLP_PROTOCOL
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: togglemaster-config
+                  key: OTEL_RESOURCE_ATTRIBUTES
             - name: PORT
               valueFrom:
                 configMapKeyRef:
@@ -51,6 +69,15 @@ spec:
                 configMapKeyRef:
                   name: togglemaster-config
                   key: TARGETING_SERVICE_URL
+            # Chave de API (gerada no auth-service) usada nas chamadas ao
+            # flag-service e targeting-service. Criada manualmente, ver
+            # docs/apm-newrelic.md (passo 4).
+            - name: SERVICE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: evaluation-service-api-key
+                  key: SERVICE_API_KEY
+                  optional: true
           envFrom:
             - secretRef:
                 name: evaluation-secret

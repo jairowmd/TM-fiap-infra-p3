@@ -114,7 +114,8 @@ module "external_secrets" {
   oidc_issuer_url   = module.eks.cluster_oidc_issuer_url
 
   secret_arns = [
-    module.secrets.secret_arn
+    module.secrets.secret_arn,
+    aws_secretsmanager_secret.observability.arn
   ]
 
   depends_on = [
@@ -136,6 +137,9 @@ module "secrets" {
     GRAFANA_ADMIN_PASSWORD = random_password.grafana_admin.result
     # Lido pelo Grafana (ExternalSecret grafana-self-healing) para o webhook de Self-Healing.
     GITHUB_DISPATCH_TOKEN = var.github_dispatch_token
+
+    PAGERDUTY_INTEGRATION_KEY = var.pagerduty_integration_key
+    SLACK_WEBHOOK_URL         = var.slack_webhook_url
 
     DB_USERNAME = var.db_username
     DB_PASSWORD = var.db_password

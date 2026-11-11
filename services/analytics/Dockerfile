@@ -14,4 +14,6 @@ COPY . .
 
 EXPOSE 8005
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8005", "app:app"]
+# "opentelemetry-instrument" ativa a auto-instrumentação (Flask, boto3/botocore).
+# Destino e nome do serviço vêm das variáveis OTEL_* do deployment.
+CMD ["opentelemetry-instrument", "gunicorn", "--bind", "0.0.0.0:8005", "app:app"]
