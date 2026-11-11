@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: targeting-service
-          image: 786197525471.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-targeting:be7d60c09ad7b333be02ea247db199ee07f1123b
+          image: 786197525471.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-targeting:a18378e7ad9de7c7bb1206a96f89c8f48ed608ca
           ports:
             - containerPort: 8003
           env:
