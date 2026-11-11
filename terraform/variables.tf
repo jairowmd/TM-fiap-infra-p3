@@ -84,6 +84,31 @@ variable "db_password" {
   }
 }
 
+# Token do GitHub usado pelo contact point de Self-Healing do Grafana para
+# disparar o workflow (repository_dispatch). Vazio = webhook sem autenticação.
+variable "github_dispatch_token" {
+  description = "Fine-grained GitHub token (Contents: Read and write on this repo) for the Grafana self-healing webhook; set with TF_VAR_github_dispatch_token"
+  type        = string
+  sensitive   = true
+
+  validation {
+    condition     = var.github_dispatch_token == "" || can(regex("^(github_pat_|ghp_)[A-Za-z0-9_]+$", var.github_dispatch_token))
+    error_message = "github_dispatch_token must be empty or a GitHub token (github_pat_... or ghp_...)."
+  }
+}
+
+variable "pagerduty_integration_key" {
+  description = "PagerDuty Events API integration key"
+  type        = string
+  sensitive   = true
+}
+
+variable "slack_webhook_url" {
+  description = "Slack Incoming Webhook URL for Grafana alerts"
+  type        = string
+  sensitive   = true
+}
+
 variable "external_secrets_chart_version" {
   description = "External Secrets Helm chart version (>= 0.17, the manifests use external-secrets.io/v1)"
   type        = string

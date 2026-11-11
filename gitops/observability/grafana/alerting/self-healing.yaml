@@ -1,0 +1,130 @@
+# Alerta e contact point do Self-Healing, provisionados no Grafana pelo sidecar
+# de alertas (label grafana_alert). O Grafana roda sem persistência, então o que
+# fosse criado pela interface sumiria a cada restart do Pod.
+#
+# Fluxo: AuthService5xx FIRING -> contact point self-healing-github ->
+# POST /repos/jairowmd/TM-fiap-infra-p3/dispatches -> .github/workflows/self-healing.yml
+#
+# A regra escolhe o contact point direto (notification_settings), sem mexer na
+# árvore de notification policies, que fica livre para PagerDuty/OpsGenie/ChatOps.
+#
+# $GITHUB_DISPATCH_TOKEN é interpolado pelo Grafana a partir da variável de
+# ambiente (ExternalSecret grafana-self-healing). Para usar "$" literal: "$$".
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: grafana-alerting-self-healing
+  labels:
+    grafana_alert: "1"
+
+data:
+  self-healing.yaml: |
+    apiVersion: 1
+
+    contactPoints:
+      - orgId: 1
+        name: self-healing-github
+        receivers:
+          # GitHub: recuperação automática.
+          - uid: self-healing-github
+            type: webhook
+            disableResolveMessage: true
+            settings:
+              url: https://api.github.com/repos/jairowmd/TM-fiap-infra-p3/dispatches
+              httpMethod: POST
+              authorization_scheme: Bearer
+              authorization_credentials: $GITHUB_DISPATCH_TOKEN
+              headers:
+                Accept: application/vnd.github+json
+                X-GitHub-Api-Version: "2022-11-28"
+              payload:
+                template: |
+                  {
+                    "event_type": "self-healing",
+                    "client_payload": {
+                      "deployment": "{{ .CommonLabels.deployment }}",
+                      "alertname": "{{ .CommonLabels.alertname }}",
+                      "status": "{{ .Status }}"
+                    }
+                  }
+
+          # PagerDuty: abertura e resolução de incidentes.
+          - uid: pagerduty-togglemaster
+            type: pagerduty
+            settings:
+              severity: critical
+              component: auth-service
+              group: ToggleMaster
+              summary: |
+                {{ template "default.message" . }}
+            secure_settings:
+              integrationKey: $PAGERDUTY_INTEGRATION_KEY
+
+          # Slack: notificações no canal de incidentes.
+          - uid: slack-togglemaster
+            type: slack
+            settings:
+              recipient: "#incidentes-togglemaster"
+              username: ToggleMaster Grafana
+              title: |
+                {{ template "slack.default.title" . }}
+              text: |
+                {{ template "slack.default.text" . }}
+            secure_settings:
+              url: $SLACK_WEBHOOK_URL
+    groups:
+      - orgId: 1
+        name: self-healing
+        # Pasta própria: evita duplicar a pasta "ToggleMaster" criada pelo sidecar de dashboards.
+        folder: Self-Healing
+        interval: 30s
+        rules:
+          - uid: auth-service-5xx
+            title: AuthService5xx
+            condition: C
+            data:
+              # Mesma consulta do painel "auth-service — erros 5xx" do dashboard.
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  instant: true
+                  range: false
+                  expr: >-
+                    100 * sum(rate(http_server_request_duration_seconds_count{job=~"(.+/)?auth-service",http_response_status_code=~"5.."}[5m]))
+                    / sum(rate(http_server_request_duration_seconds_count{job=~"(.+/)?auth-service"}[5m]))
+              - refId: C
+                datasourceUid: __expr__
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params: [5]
+            # Sem tráfego (ou sem 5xx) a consulta não retorna série: não é incidente.
+            noDataState: OK
+            execErrState: Error
+            for: 1m
+            labels:
+              # Lido pelo payload do webhook: é o deployment que o runbook reinicia.
+              deployment: auth-service
+              severity: critical
+              self_healing: "true"
+            annotations:
+              summary: auth-service com mais de 5% de respostas 5xx
+              description: >-
+                Taxa de 5xx do auth-service acima de 5% nos últimos 5 minutos.
+                O workflow de Self-Healing reinicia o deployment (rollout restart).
+              runbook_url: https://github.com/jairowmd/TM-fiap-infra-p3/blob/main/scripts/self-healing/README.md
+            notification_settings:
+              receiver: self-healing-github
+              group_wait: 10s
+              # Alerta que continua FIRING depois do restart volta a disparar o
+              # workflow a cada 15 min (o runbook tem cooldown de 5 min).
+              repeat_interval: 15m
