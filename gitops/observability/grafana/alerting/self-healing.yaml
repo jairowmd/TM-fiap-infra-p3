@@ -50,6 +50,29 @@ data:
                     }
                   }
 
+          # PagerDuty: abertura e resolução de incidentes.
+          - uid: pagerduty-togglemaster
+            type: pagerduty
+            settings:
+              integrationKey: $PAGERDUTY_INTEGRATION_KEY
+              severity: critical
+              component: auth-service
+              group: ToggleMaster
+              summary: |
+                {{ template "default.message" . }}
+
+          # Slack: notificações no canal de incidentes.
+          - uid: slack-togglemaster
+            type: slack
+            settings:
+              recipient: "#incidentes-togglemaster"
+              url: $SLACK_WEBHOOK_URL
+              username: ToggleMaster Grafana
+              title: |
+                {{ template "slack.default.title" . }}
+              text: |
+                {{ template "slack.default.text" . }}
+
     groups:
       - orgId: 1
         name: self-healing
