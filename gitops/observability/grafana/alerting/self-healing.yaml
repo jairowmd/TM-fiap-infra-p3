@@ -53,26 +53,24 @@ data:
           - uid: pagerduty-togglemaster
             type: pagerduty
             settings:
+              integrationKey: $PAGERDUTY_INTEGRATION_KEY
               severity: critical
               component: auth-service
               group: ToggleMaster
               summary: |
                 {{ template "default.message" . }}
-            secure_settings:
-              integrationKey: $PAGERDUTY_INTEGRATION_KEY
 
           # Slack: notificações no canal de incidentes.
           - uid: slack-togglemaster
             type: slack
             settings:
               recipient: "#incidentes-togglemaster"
+              url: $SLACK_WEBHOOK_URL
               username: ToggleMaster Grafana
               title: |
                 {{ template "slack.default.title" . }}
               text: |
                 {{ template "slack.default.text" . }}
-            secure_settings:
-              url: $SLACK_WEBHOOK_URL
     groups:
       - orgId: 1
         name: self-healing
