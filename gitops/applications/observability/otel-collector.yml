@@ -25,6 +25,11 @@ spec:
       targetRevision: main
       ref: values
 
+    # Manifests extras do Collector (ExternalSecret da license key do New Relic).
+    - repoURL: https://github.com/jairowmd/TM-fiap-infra-p3.git
+      targetRevision: main
+      path: gitops/observability/otel-collector/manifests
+
   syncPolicy:
       automated:
         enabled: true

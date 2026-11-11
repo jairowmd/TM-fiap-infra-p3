@@ -33,6 +33,18 @@ service:
   enabled: true
   type: ClusterIP
 
+# License key (INGEST - LICENSE) do New Relic, criada pelo ExternalSecret
+# gitops/observability/otel-collector/manifests/newrelic-external-secret.yaml.
+# optional: sem a secret o Collector sobe mesmo assim (Loki e Prometheus seguem
+# funcionando); só o envio ao New Relic é recusado.
+extraEnvs:
+  - name: NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: newrelic-license
+        key: NEW_RELIC_LICENSE_KEY
+        optional: true
+
 ports:
   otlp:
     enabled: true
@@ -93,6 +105,9 @@ config:
       timeout: 5s
       send_batch_size: 512
       send_batch_max_size: 1024
+    # Só na pipeline do New Relic, que trabalha melhor com métricas delta.
+    # O Prometheus continua recebendo as métricas cumulativas originais.
+    cumulativetodelta: {}
 
   exporters:
     otlphttp/loki:
@@ -105,6 +120,13 @@ config:
       endpoint: "http://prometheus-operated.observability.svc.cluster.local:9090/api/v1/otlp"
       tls:
         insecure: true
+    # APM: traces e métricas dos 5 microsserviços para o New Relic (conta US).
+    # Conta na região EU: trocar por https://otlp.eu01.nr-data.net
+    otlphttp/newrelic:
+      endpoint: https://otlp.nr-data.net
+      headers:
+        api-key: ${env:NEW_RELIC_LICENSE_KEY}
+      compression: gzip
     # Temporary diagnostic output, not persistent telemetry storage.
     
     debug:
@@ -120,12 +142,17 @@ config:
     pipelines:
       traces:
         receivers: [otlp]
-        processors: [memory_limiter, batch]
-        exporters: [debug]
+        processors: [memory_limiter, k8sattributes, batch]
+        exporters: [otlphttp/newrelic]
       metrics:
         receivers: [otlp]
         processors: [k8sattributes, memory_limiter, batch]
         exporters: [otlphttp/prometheus]
+      # Cópia das mesmas métricas para o New Relic (APM), em delta.
+      metrics/newrelic:
+        receivers: [otlp]
+        processors: [k8sattributes, memory_limiter, cumulativetodelta, batch]
+        exporters: [otlphttp/newrelic]
       logs:
         processors: [k8sattributes, memory_limiter, batch]
         exporters: [otlphttp/loki]
