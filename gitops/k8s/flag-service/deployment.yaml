@@ -50,6 +50,10 @@ spec:
                   key: OTEL_RESOURCE_ATTRIBUTES
             - name: OTEL_PYTHON_FLASK_EXCLUDED_URLS
               value: "health"
+            # Semconv HTTP estável: http.server.request.duration (segundos), a mesma
+            # métrica dos serviços Go, usada no dashboard e no alerta de 5xx.
+            - name: OTEL_SEMCONV_STABILITY_OPT_IN
+              value: "http"
             - name: OTEL_PYTHON_LOG_CORRELATION
               value: "true"
             - name: OTEL_LOGS_EXPORTER
