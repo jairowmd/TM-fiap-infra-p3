@@ -1,6 +1,6 @@
 # Região da AWS onde os recursos serão criados
 aws_region  = "us-east-2"
-aws_profile = "mateus-fase4"
+aws_profile = "aws-gp12-sa"
 
 # Nome do projeto
 project_name = "tm-fiap-p4"
@@ -49,3 +49,7 @@ eks_cluster_admin_principal_arns = [
 # A senha não deve ser gravada neste arquivo.
 # Defina no PowerShell antes do terraform plan/apply:
 # $env:TF_VAR_db_password = "uma-senha-forte-com-12-ou-mais-caracteres"
+
+# Token fine-grained do GitHub para o webhook de Self-Healing do Grafana
+# (Contents: Read and write só neste repositório). Também não vai neste arquivo:
+# $env:TF_VAR_github_dispatch_token = "github_pat_..."

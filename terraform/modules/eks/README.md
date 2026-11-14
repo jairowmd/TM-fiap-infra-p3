@@ -206,7 +206,7 @@ terraform apply
 Depois do `apply` (cluster leva ~10-15 min para `ACTIVE`):
 
 ```powershell
-aws eks update-kubeconfig --name <eks_cluster_name> --region us-east-1
+aws eks update-kubeconfig --name <eks_cluster_name> --region us-east-2
 kubectl get nodes
 kubectl get pods -A
 ```

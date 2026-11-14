@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: observability
+
+resources:
+  - external-secret.yaml
+  # Regra AuthService5xx + contact point do Self-Healing (sidecar de alertas).
+  - alerting/self-healing.yaml
+
+# Every JSON in dashboards/ becomes a ConfigMap that the Grafana sidecar
+# (kube-prometheus-stack) imports into the "ToggleMaster" folder.
+configMapGenerator:
+  - name: grafana-dashboard-togglemaster-overview
+    files:
+      - dashboards/togglemaster-overview.json
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: ToggleMaster

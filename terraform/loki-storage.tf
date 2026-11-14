@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 locals {
   loki_tags = {
     Project     = var.project_name
@@ -11,7 +13,7 @@ locals {
 resource "aws_s3_bucket" "loki" {
   for_each = toset(["chunks", "ruler"])
 
-  bucket        = "${var.project_name}-${var.environment}-loki-${each.key}-9572"
+  bucket        = "${var.project_name}-${var.environment}-loki-${each.key}-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
   tags          = local.loki_tags
 }

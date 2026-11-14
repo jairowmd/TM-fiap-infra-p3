@@ -114,7 +114,8 @@ module "external_secrets" {
   oidc_issuer_url   = module.eks.cluster_oidc_issuer_url
 
   secret_arns = [
-    module.secrets.secret_arn
+    module.secrets.secret_arn,
+    aws_secretsmanager_secret.observability.arn
   ]
 
   depends_on = [
@@ -132,7 +133,13 @@ module "secrets" {
   environment  = var.environment
 
   secret_values = {
-    MASTER_KEY = random_password.auth_master_key.result
+    MASTER_KEY             = random_password.auth_master_key.result
+    GRAFANA_ADMIN_PASSWORD = random_password.grafana_admin.result
+    # Lido pelo Grafana (ExternalSecret grafana-self-healing) para o webhook de Self-Healing.
+    GITHUB_DISPATCH_TOKEN = var.github_dispatch_token
+
+    PAGERDUTY_INTEGRATION_KEY = var.pagerduty_integration_key
+    SLACK_WEBHOOK_URL         = var.slack_webhook_url
 
     DB_USERNAME = var.db_username
     DB_PASSWORD = var.db_password
@@ -207,5 +214,11 @@ module "aws_load_balancer_controller" {
 # Generated once and retained in Terraform state; consumed only by auth.
 resource "random_password" "auth_master_key" {
   length  = 48
+  special = false
+}
+
+# Grafana admin password. Synced to observability/grafana-admin by External Secrets.
+resource "random_password" "grafana_admin" {
+  length  = 32
   special = false
 }

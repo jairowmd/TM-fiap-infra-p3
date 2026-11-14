@@ -17,3 +17,10 @@ variable "environment" {
   description = "Environment name"
   type        = string
 }
+
+# Profile do AWS CLI usado para autenticar (ex: aws-gp12-sa)
+variable "aws_profile" {
+  description = "AWS CLI profile used to authenticate"
+  type        = string
+  default     = null
+}

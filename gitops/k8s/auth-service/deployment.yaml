@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: 786197525471.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-auth:a68f20773a9c3da3d8f81acd426c893a5d681b9a
+          image: 786197525471.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p4-dev-auth:ea122f6f3c70a696d8ed71b35986bb8866d8e138
           ports:
             - containerPort: 8001
           resources:
@@ -30,6 +30,24 @@ spec:
               cpu: "250m"
               memory: "256Mi"
           env:
+            # --- OpenTelemetry (APM / tracing distribuído) ---
+            - name: OTEL_SERVICE_NAME
+              value: "auth-service"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: togglemaster-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  name: togglemaster-config
+                  key: OTEL_EXPORTER_OTLP_PROTOCOL
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: togglemaster-config
+                  key: OTEL_RESOURCE_ATTRIBUTES
             - name: PORT
               valueFrom:
                 configMapKeyRef:

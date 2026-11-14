@@ -1,0 +1,518 @@
+{
+  "uid": "togglemaster-overview",
+  "title": "ToggleMaster — Saúde do Ecossistema",
+  "description": "Recursos do cluster EKS, tráfego HTTP dos 5 microsserviços (OpenTelemetry) e logs em tempo real (Loki).",
+  "tags": ["togglemaster", "kubernetes", "opentelemetry", "loki"],
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": { "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"] },
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": { "query": "label_values(kube_namespace_status_phase, namespace)", "refId": "ns" },
+        "definition": "label_values(kube_namespace_status_phase, namespace)",
+        "current": { "text": "togglemaster", "value": "togglemaster" },
+        "refresh": 1,
+        "sort": 1,
+        "includeAll": false,
+        "multi": false
+      },
+      {
+        "name": "service",
+        "label": "Microsserviço",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": { "query": "label_values(kube_deployment_spec_replicas{namespace=\"$namespace\"}, deployment)", "refId": "svc" },
+        "definition": "label_values(kube_deployment_spec_replicas{namespace=\"$namespace\"}, deployment)",
+        "current": { "text": ["All"], "value": ["$__all"] },
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "search",
+        "label": "Buscar nos logs",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": "", "value": "" }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "Restarts de pods",
+        "enable": true,
+        "iconColor": "orange",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "sum by (pod) (changes(kube_pod_container_status_restarts_total{namespace=\"$namespace\"}[2m])) > 0",
+        "titleFormat": "Restart: {{pod}}",
+        "step": "1m"
+      },
+      {
+        "name": "Rollouts (self-healing / deploy)",
+        "enable": true,
+        "iconColor": "purple",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "sum by (deployment) (changes(kube_deployment_status_observed_generation{namespace=\"$namespace\"}[2m])) > 0",
+        "titleFormat": "Rollout: {{deployment}}",
+        "step": "1m"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "id": 1,
+      "title": "Visão geral do ecossistema",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 2,
+      "title": "Nodes Ready",
+      "description": "Nodes do EKS com condição Ready.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "instant": true,
+          "expr": "sum(kube_node_status_condition{condition=\"Ready\",status=\"true\"})" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "id": 3,
+      "title": "CPU do cluster",
+      "description": "Uso médio de CPU de todos os nodes (node-exporter).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A",
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 85 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "id": 4,
+      "title": "Memória do cluster",
+      "description": "Memória em uso considerando todos os nodes (node-exporter).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A",
+          "expr": "100 * (1 - sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 75 }, { "color": "red", "value": 90 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "id": 5,
+      "title": "Pods Running",
+      "description": "Pods em execução no namespace selecionado.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A",
+          "expr": "sum(kube_pod_status_phase{namespace=\"$namespace\",phase=\"Running\"})" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": null } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "id": 6,
+      "title": "Pods com problema",
+      "description": "Pods distintos em Pending/Failed/Unknown ou com container em Waiting (CrashLoopBackOff, ImagePullBackOff...).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A",
+          "expr": "count(max by (pod) (kube_pod_status_phase{namespace=\"$namespace\",phase=~\"Pending|Failed|Unknown\"} == 1) or max by (pod) (kube_pod_container_status_waiting_reason{namespace=\"$namespace\"} == 1)) or vector(0)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "id": 7,
+      "title": "Restarts (1h)",
+      "description": "Reinícios de containers na última hora (inclui pods recriados pelo self-healing).",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A",
+          "expr": "round(sum(increase(kube_pod_container_status_restarts_total{namespace=\"$namespace\"}[1h])) or vector(0))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "row",
+      "id": 8,
+      "title": "Recursos do cluster",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 9,
+      "title": "CPU por node",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{instance}}",
+          "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "none", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"], "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "timeseries",
+      "id": 10,
+      "title": "Memória por node",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{instance}}",
+          "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "none", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"], "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "timeseries",
+      "id": 11,
+      "title": "CPU por microsserviço",
+      "description": "Uso de CPU (cAdvisor) somado entre as réplicas de cada serviço.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 14 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{container}}",
+          "expr": "sum by (container) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\",container=~\"$service\"}[$__rate_interval]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores", "min": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "none", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "timeseries",
+      "id": 12,
+      "title": "Memória por microsserviço",
+      "description": "Working set de memória (cAdvisor) somado entre as réplicas de cada serviço.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 14 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{container}}",
+          "expr": "sum by (container) (container_memory_working_set_bytes{namespace=\"$namespace\",container=~\"$service\"})" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes", "min": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "none", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "timeseries",
+      "id": 13,
+      "title": "Réplicas disponíveis x HPA",
+      "description": "Escalonamento automático: réplicas desejadas pelo HPA vs réplicas disponíveis de cada deployment.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{deployment}} disponíveis",
+          "expr": "sum by (deployment) (kube_deployment_status_replicas_available{namespace=\"$namespace\",deployment=~\"$service\"})" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "B", "legendFormat": "HPA {{horizontalpodautoscaler}} desejado",
+          "expr": "sum by (horizontalpodautoscaler) (kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"$namespace\"})" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none", "min": 0, "decimals": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "spanNulls": true, "lineInterpolation": "stepAfter", "stacking": { "mode": "none", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "row",
+      "id": 14,
+      "title": "Microsserviços — tráfego HTTP (OpenTelemetry)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 15,
+      "title": "Requisições por segundo",
+      "description": "Métrica OTel http.server.request.duration (semconv estável) enviada pelos serviços ao OTel Collector e exportada ao Prometheus. O label job é o service.name.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{job}}",
+          "expr": "sum by (job) (rate(http_server_request_duration_seconds_count{job=~\"(.+/)?$service\"}[$__rate_interval]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps", "min": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "none", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"], "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "timeseries",
+      "id": 16,
+      "title": "Taxa de erros HTTP 5xx",
+      "description": "Percentual de respostas 5xx por serviço. A área vermelha começa em 5%, o limite usado no alerta.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{job}}",
+          "expr": "(100 * sum by (job) (rate(http_server_request_duration_seconds_count{job=~\"(.+/)?$service\",http_response_status_code=~\"5..\"}[$__rate_interval])) / sum by (job) (rate(http_server_request_duration_seconds_count{job=~\"(.+/)?$service\"}[$__rate_interval]))) or (0 * sum by (job) (rate(http_server_request_duration_seconds_count{job=~\"(.+/)?$service\"}[$__rate_interval])))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0,
+          "color": { "mode": "palette-classic" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "transparent", "value": null }, { "color": "red", "value": 5 } ] },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 15, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "none", "group": "A" }, "thresholdsStyle": { "mode": "line+area" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"], "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "timeseries",
+      "id": 17,
+      "title": "Latência p50 / p95",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A", "legendFormat": "{{job}} p95",
+          "expr": "histogram_quantile(0.95, sum by (job, le) (rate(http_server_request_duration_seconds_bucket{job=~\"(.+/)?$service\"}[$__rate_interval])))" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "B", "legendFormat": "{{job}} p50",
+          "expr": "histogram_quantile(0.50, sum by (job, le) (rate(http_server_request_duration_seconds_bucket{job=~\"(.+/)?$service\"}[$__rate_interval])))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s", "min": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "gradientMode": "opacity", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "none", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"], "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "stat",
+      "id": 18,
+      "title": "auth-service — erros 5xx (5m)",
+      "description": "Mesma condição do alerta de self-healing: 5xx do auth-service acima de 5% em 5 minutos.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 31 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A",
+          "expr": "(100 * sum(rate(http_server_request_duration_seconds_count{job=~\"(.+/)?auth-service\",http_response_status_code=~\"5..\"}[5m])) / sum(rate(http_server_request_duration_seconds_count{job=~\"(.+/)?auth-service\"}[5m]))) or vector(0)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 5 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "stat",
+      "id": 19,
+      "title": "Throughput total (5m)",
+      "description": "Requisições por segundo somando os serviços selecionados.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 31 },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "refId": "A",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{job=~\"(.+/)?$service\"}[5m])) or vector(0)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": null } ] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "center", "textMode": "value",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "type": "row",
+      "id": 20,
+      "title": "Logs em tempo real (Loki)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 21,
+      "title": "Volume de logs por serviço",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 40 },
+      "targets": [
+        { "datasource": { "type": "loki", "uid": "loki" }, "refId": "A", "queryType": "range", "legendFormat": "{{k8s_container_name}}",
+          "expr": "sum by (k8s_container_name) (count_over_time({k8s_namespace_name=\"$namespace\", k8s_container_name=~\"$service\"} [$__auto]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short", "min": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 60, "gradientMode": "none", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "normal", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "timeseries",
+      "id": 22,
+      "title": "Logs de erro por serviço",
+      "description": "Linhas contendo error, exception, panic, fatal ou CHAOS (falha injetada no auth-service).",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 40 },
+      "targets": [
+        { "datasource": { "type": "loki", "uid": "loki" }, "refId": "A", "queryType": "range", "legendFormat": "{{k8s_container_name}}",
+          "expr": "sum by (k8s_container_name) (count_over_time({k8s_namespace_name=\"$namespace\", k8s_container_name=~\"$service\"} |~ \"(?i)(error|exception|panic|fatal|chaos)\" [$__auto]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short", "min": 0,
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 60, "gradientMode": "none", "showPoints": "never", "spanNulls": true, "stacking": { "mode": "normal", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "type": "logs",
+      "id": 23,
+      "title": "Logs dos microsserviços",
+      "description": "Logs dos containers coletados pelo OTel Collector (filelog) e enviados ao Loki via OTLP. Use a caixa 'Buscar nos logs' para filtrar (regex, sem diferenciar maiúsculas).",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 47 },
+      "targets": [
+        { "datasource": { "type": "loki", "uid": "loki" }, "refId": "A", "queryType": "range",
+          "expr": "{k8s_namespace_name=\"$namespace\", k8s_container_name=~\"$service\"} |~ \"(?i)$search\"" }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "prettifyLogMessage": false,
+        "showLabels": false,
+        "showCommonLabels": false
+      }
+    }
+  ]
+}

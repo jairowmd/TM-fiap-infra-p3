@@ -1,0 +1,204 @@
+# Compatible with kube-prometheus-stack chart 92.18.0.
+#
+# Prometheus: infra metrics (kubelet/cAdvisor, kube-state-metrics, node-exporter)
+#             + application metrics pushed by the OTel Collector (OTLP receiver).
+# Grafana:    main visualization tool, with Prometheus and Loki datasources and
+#             dashboards provisioned from ConfigMaps (see gitops/observability/grafana).
+
+# Alerts are handled by Grafana Alerting (contact points: PagerDuty/OpsGenie,
+# ChatOps and the self-healing webhook). Alertmanager would only consume resources.
+alertmanager:
+  enabled: false
+
+# EKS manages the control plane: these components are not scrapeable and would
+# only show up as permanently DOWN targets.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: false
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeProxy: false
+
+prometheusOperator:
+  # Admission webhooks rely on Helm hooks that churn certificates on every Argo CD
+  # sync. PrometheusRules are reviewed in Git instead.
+  admissionWebhooks:
+    enabled: false
+  tls:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+prometheus:
+  prometheusSpec:
+    # Receives metrics pushed by the OTel Collector at /api/v1/otlp/v1/metrics.
+    enableOTLPReceiver: true
+    otlp:
+      translationStrategy: UnderscoreEscapingWithSuffixes
+      # Resource attributes become labels, so the dashboard can filter by pod/namespace.
+      # service.name / service.namespace are already mapped to "job".
+      promoteResourceAttributes:
+        - service.name
+        - service.namespace
+        - k8s.namespace.name
+        - k8s.pod.name
+        - k8s.deployment.name
+        - k8s.container.name
+    tsdb:
+      # Pushes from several collector replicas may arrive slightly out of order.
+      outOfOrderTimeWindow: 30m
+
+    # Pick up ServiceMonitors/PodMonitors/PrometheusRules from any release
+    # (not only the ones labeled with this Helm release).
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
+
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    retention: 7d
+    retentionSize: 8GB
+
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        memory: 1536Mi
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+    # Delete the EBS volume together with the StatefulSet, so terraform destroy
+    # does not leave orphan volumes behind.
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Delete
+      whenScaled: Retain
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 192Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 96Mi
+
+grafana:
+  enabled: true
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: browser
+
+  # Admin credentials come from AWS Secrets Manager through External Secrets
+  # (gitops/observability/grafana/external-secret.yaml).
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 384Mi
+
+  # Dashboards, datasources and alerting are provisioned from Git, no state to persist.
+  persistence:
+    enabled: false
+
+  # GitHub token for the self-healing contact point (gitops/observability/grafana/
+  # alerting/self-healing.yaml), synced by the grafana-self-healing ExternalSecret.
+  # optional: Grafana still starts before the token exists; only the webhook fails.
+  # Env vars are read at startup: restart Grafana after rotating the token.
+  envValueFrom:
+    GITHUB_DISPATCH_TOKEN:
+      secretKeyRef:
+        name: grafana-self-healing
+        key: github-dispatch-token
+        optional: true
+
+    PAGERDUTY_INTEGRATION_KEY:
+       secretKeyRef:
+        name: grafana-notifications
+        key: pagerduty-integration-key
+        optional: true
+
+    SLACK_WEBHOOK_URL:
+       secretKeyRef:
+        name: grafana-notifications
+        key: slack-webhook-url
+        optional: true
+
+  grafana.ini:
+    analytics:
+      check_for_updates: false
+      reporting_enabled: false
+    users:
+      default_theme: dark
+
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
+        allowUiUpdates: false
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+      isDefaultDatasource: true
+      uid: prometheus
+      alertmanager:
+        enabled: false
+    # Alert rules and contact points from ConfigMaps labeled grafana_alert=1.
+    alerts:
+      enabled: true
+      label: grafana_alert
+      labelValue: "1"
+      searchNamespace: observability
+
+  additionalDataSources:
+    - name: Loki
+      uid: loki
+      type: loki
+      access: proxy
+      url: http://loki.observability.svc.cluster.local:3100
+      editable: false
+      jsonData:
+        maxLines: 1000

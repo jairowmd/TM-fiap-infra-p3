@@ -29,7 +29,7 @@ env:
   EKS_CLUSTER_NAME: tm-fiap-p4-dev-eks
   NAMESPACE: togglemaster
   # Output self_healing_role_arn do Terraform. ARN não é segredo.
-  SELF_HEALING_ROLE_ARN: arn:aws:iam::443670030001:role/tm-fiap-p4-dev-self-healing
+  SELF_HEALING_ROLE_ARN: arn:aws:iam::786197525471:role/tm-fiap-p4-dev-self-healing
 
 jobs:
   rollout-restart:

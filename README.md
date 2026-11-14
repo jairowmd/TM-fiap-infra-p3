@@ -2,6 +2,8 @@
 
 Procedimento de criação, destruição e diagnóstico: [Lifecycle da infraestrutura](docs/infrastructure-lifecycle.md).
 
+Métricas, Grafana e dashboard: [Prometheus + Grafana](docs/observability-prometheus-grafana.md).
+
 [![Terraform](https://img.shields.io/badge/Terraform-≥1.0-blue.svg)](https://www.terraform.io/)
 [![AWS](https://img.shields.io/badge/AWS-Provider-orange.svg)](https://aws.amazon.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.34+-green.svg)](https://kubernetes.io/)
@@ -477,7 +479,7 @@ Registros de container para cada microsserviço.
 
 ```hcl
 # Região AWS
-aws_region = "us-east-1"
+aws_region = "us-east-2"
 
 # Projeto
 project_name = "tm-fiap-p3"
@@ -487,7 +489,7 @@ environment  = "dev"
 vpc_cidr             = "10.0.0.0/16"
 public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
 private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24", "10.0.21.0/24", "10.0.22.0/24"]
-availability_zones   = ["us-east-1a", "us-east-1b"]
+availability_zones   = ["us-east-2a", "us-east-2b"]
 
 # EKS
 eks_cluster_admin_principal_arns = ["arn:aws:iam::ACCOUNT_ID:user/USERNAME"]
@@ -496,7 +498,7 @@ eks_cluster_admin_principal_arns = ["arn:aws:iam::ACCOUNT_ID:user/USERNAME"]
 db_password = "SetPasswordHere123!"  # Via TF_VAR_db_password
 
 # Helm Charts
-external_secrets_chart_version                    = "0.12.0"
+external_secrets_chart_version                    = "2.14.0"
 aws_load_balancer_controller_chart_version = "1.14.1"
 ```
 
@@ -586,7 +588,7 @@ aws_load_balancer_controller_chart_version = "1.14.1"  # Default
      backend "s3" {
        bucket         = "tm-fiap-p3-terraform-state"
        key            = "prod/terraform.tfstate"
-       region         = "us-east-1"
+       region         = "us-east-2"
        encrypt        = true
        dynamodb_table = "terraform-locks"
      }
@@ -611,7 +613,7 @@ aws configure
 # ou
 export AWS_ACCESS_KEY_ID="your-access-key"
 export AWS_SECRET_ACCESS_KEY="your-secret-key"
-export AWS_REGION="us-east-1"
+export AWS_REGION="us-east-2"
 ```
 
 ### 3. Configurar terraform.tfvars
@@ -686,7 +688,7 @@ terraform output
 
 # Configurar kubectl
 aws eks update-kubeconfig \
-  --region us-east-1 \
+  --region us-east-2 \
   --name tm-fiap-p3-dev-eks
 
 # Verificar cluster
@@ -715,16 +717,16 @@ private_subnet_ids      = ["subnet-xxx", "subnet-xxx", ...]
 
 # EKS
 eks_cluster_name        = "tm-fiap-p3-dev-eks"
-eks_cluster_endpoint    = "https://xxx.us-east-1.eks.amazonaws.com"
+eks_cluster_endpoint    = "https://xxx.us-east-2.eks.amazonaws.com"
 eks_cluster_arn         = "arn:aws:eks:..."
 eks_oidc_provider_arn   = "arn:aws:iam::..."
 eks_oidc_issuer_url     = "https://oidc.eks...."
 
 # RDS
 rds_endpoints = {
-  auth      = "auth-db.xxxxx.us-east-1.rds.amazonaws.com:5432"
-  flag      = "flag-db.xxxxx.us-east-1.rds.amazonaws.com:5432"
-  targeting = "targeting-db.xxxxx.us-east-1.rds.amazonaws.com:5432"
+  auth      = "auth-db.xxxxx.us-east-2.rds.amazonaws.com:5432"
+  flag      = "flag-db.xxxxx.us-east-2.rds.amazonaws.com:5432"
+  targeting = "targeting-db.xxxxx.us-east-2.rds.amazonaws.com:5432"
 }
 
 # Cache
@@ -732,15 +734,15 @@ redis_endpoint = "xxx.xxxxx.cache.amazonaws.com"
 redis_port     = 6379
 
 # Messaging
-sqs_queue_url  = "https://sqs.us-east-1.amazonaws.com/..."
+sqs_queue_url  = "https://sqs.us-east-2.amazonaws.com/..."
 
 # Registry
 ecr_repositories = {
-  auth       = "xxx.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-auth"
-  flag       = "xxx.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-flag"
-  targeting  = "xxx.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-targeting"
-  evaluation = "xxx.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-evaluation"
-  analytics  = "xxx.dkr.ecr.us-east-1.amazonaws.com/tm-fiap-p3-dev-analytics"
+  auth       = "xxx.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p3-dev-auth"
+  flag       = "xxx.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p3-dev-flag"
+  targeting  = "xxx.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p3-dev-targeting"
+  evaluation = "xxx.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p3-dev-evaluation"
+  analytics  = "xxx.dkr.ecr.us-east-2.amazonaws.com/tm-fiap-p3-dev-analytics"
 }
 ```
 

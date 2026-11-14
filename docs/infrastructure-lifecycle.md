@@ -46,7 +46,7 @@ Execute na raiz do repositório, no Ubuntu/WSL, com Terraform, AWS CLI, Helm e
 kubectl disponíveis:
 
 ```bash
-export AWS_PROFILE=mateus-fase4
+export AWS_PROFILE=aws-gp12-sa
 export AWS_REGION=us-east-2
 export TF_VAR_aws_profile="$AWS_PROFILE"
 aws sts get-caller-identity
