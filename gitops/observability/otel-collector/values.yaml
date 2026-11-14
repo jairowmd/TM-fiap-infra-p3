@@ -94,7 +94,7 @@ config:
     otlphttp/loki:
       endpoint: "http://loki:3100/otlp"
       tls:
-        insecure: true
+        insecure: true  
     # Temporary diagnostic output, not persistent telemetry storage.
     
     debug:
