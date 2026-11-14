@@ -113,7 +113,7 @@ config:
     otlphttp/loki:
       endpoint: "http://loki:3100/otlp"
       tls:
-        insecure: true
+        insecure: true  
     # Prometheus native OTLP receiver (enableOTLPReceiver in kube-prometheus-stack).
     # The exporter appends /v1/metrics -> /api/v1/otlp/v1/metrics.
     otlphttp/prometheus:
